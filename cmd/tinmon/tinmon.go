@@ -117,32 +117,41 @@ func run_metrics(ctx context.Context, db *sql.DB, period time.Duration, shell st
 	metrics []*metric, results chan<- measurement) {
 
 	log.Println("Entering measurement loop with period of ", period, "...")
+	_cur := 0
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-time.After(period):
 			for _n, _m := range metrics {
+				_cur++
+				cur := _cur
 				n := _n
 				m := _m
 				sctx, cf := context.WithTimeout(ctx, period/2+1)
 				defer cf()
 				go func(sctx context.Context) {
 					log.Printf(
-						"Running command %d/%d: %q\n",
-						n+1, len(metrics), m.command)
+						"{%d} Running command %d/%d: %q\n",
+						cur, n+1, len(metrics), m.command)
 					cmd := exec.CommandContext(sctx, shell, "-c", m.command)
 					out, err := cmd.Output()
 					if err != nil {
-						log.Println("... run failed: ", err)
+						log.Printf(
+							"{%d}... run failed: %v\n",
+							cur, err)
 						return
 					}
 					cleaned := strings.TrimSpace(string(out))
-					log.Printf("... run worked and returned: %q\n", cleaned)
+					log.Printf(
+						"{%d}... run worked and returned: %q\n",
+						cur, cleaned)
 
 					val, err := strconv.ParseFloat(cleaned, 64)
 					if err != nil {
-						log.Printf("... but it's not floaty: %v\n", err)
+						log.Printf(
+							"{%d}... but it's not floaty: %v\n",
+							cur, err)
 						return
 					}
 
