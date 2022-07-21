@@ -54,7 +54,7 @@ type measurement struct {
 func db_init(db_path string) *sql.DB {
 	db, err := sql.Open("sqlite", db_path)
 	if err != nil {
-		log.Fatal("cannot open database: %v", err)
+		log.Fatalf("cannot open database: %v\n", err)
 	}
 
 	var db_version string
