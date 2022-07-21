@@ -2,12 +2,14 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	_ "github.com/glebarez/go-sqlite"
@@ -32,7 +34,7 @@ type params_serve struct {
 }
 
 type metric struct {
-	command, name, description string
+	name, description, command string
 }
 
 func db_init(db_path string) *sql.DB {
@@ -42,12 +44,38 @@ func db_init(db_path string) *sql.DB {
 	}
 
 	var db_version string
-	if err := db.QueryRow("select sqlite_version()").Scan(&db_version); err != nil {
+	if err := db.QueryRow("SELECT sqlite_version()").Scan(&db_version); err != nil {
 		log.Println("warning: unable to get sqlite version: ", err)
 	} else {
 		log.Println("database version: ", db_version)
 	}
 	return db
+}
+
+func db_migrate(db *sql.DB, metrics []*metric) error {
+	template_table := `
+CREATE TABLE IF NOT EXISTS tinmon_metric_%s(
+    id INTEGER PRIMARY KEY,
+    value DOUBLE PRECISION,
+    timestamp DATETIME_DEFAULT CURRENT_TIMESTAMP
+);
+`
+	in_err := false
+	for n, m := range metrics {
+		log.Printf(
+			"Maybe creating table metric %d/%d: %s (%s)\n",
+			n+1, len(metrics), m.name, m.description)
+		// XXX Make sure metric name is suitable for query expansion
+		_, err := db.Query(fmt.Sprintf(template_table, m.name))
+		if err != nil {
+			log.Printf("failed to create table for metric %s: %v ", m.name, err)
+			in_err = true
+		}
+	}
+	if in_err {
+		return errors.New("database migration encountered errors")
+	}
+	return nil
 }
 
 func run_metrics(shell string, metrics []*metric) error {
@@ -65,6 +93,22 @@ func run_metrics(shell string, metrics []*metric) error {
 	return nil
 }
 
+func validate_metrics(metrics []*metric) error {
+	in_err := false
+	re_name := regexp.MustCompile("^[-_a-zA-Z0-9]{1,512}$")
+	for n, m := range metrics {
+		log.Printf("Validating metric name %d/%d: %s\n", n+1, len(metrics), m.name)
+		if !re_name.MatchString(m.name) {
+			log.Println("... and the name is not valid.")
+			in_err = true
+		}
+	}
+	if in_err {
+		return errors.New("one or more metrics did not validate")
+	}
+	return nil
+}
+
 func measure(p *params_measure) {
 	db := db_init(p.db_path)
 	defer func() {
@@ -75,14 +119,23 @@ func measure(p *params_measure) {
 
 	metrics := []*metric{
 		&metric{
-			command:     "find /tmp/ -type f | wc -l",
+			name:        "n_temp_files",
 			description: "count of files under /tmp",
+			command:     "find /tmp/ -type f | wc -l",
 		},
 		&metric{
-			command:     "vm_stat |fgrep 'Pages active:'|cut -d ':' -f 2|cut -d '.' -f1",
+			name:        "n_memory_pages_used",
 			description: "pages of memory in use",
+			command:     "vm_stat |fgrep 'Pages active:'|cut -d ':' -f 2|cut -d '.' -f1",
 		},
 	}
+	if err := validate_metrics(metrics); err != nil {
+		log.Fatal("cannot proceed with measure: ", err)
+	}
+	if err := db_migrate(db, metrics); err != nil {
+		log.Fatal("cannot proceed with measure: ", err)
+	}
+
 	run_metrics(p.shell, metrics)
 }
 
