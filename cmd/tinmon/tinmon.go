@@ -2,14 +2,14 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"log"
 
 	_ "github.com/glebarez/go-sqlite"
 )
 
-func db_init() *sql.DB {
-	db_filename := "/tmp/tinmon.sqlite"
-	db, err := sql.Open("sqlite", db_filename)
+func db_init(db_path string) *sql.DB {
+	db, err := sql.Open("sqlite", db_path)
 	if err != nil {
 		log.Fatal("cannot open database: %v", err)
 	}
@@ -24,7 +24,12 @@ func db_init() *sql.DB {
 }
 
 func main() {
-	db := db_init()
+	var db_path string
+
+	flag.StringVar(&db_path, "db-path", "/tmp/tinmon.sqlite", "Path where to store tinmon database file")
+	flag.Parse()
+
+	db := db_init(db_path)
 	defer func() {
 		if err := db.Close(); err != nil {
 			log.Println("warning: error when closing database: ", err)
