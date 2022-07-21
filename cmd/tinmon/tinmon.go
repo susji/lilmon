@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"flag"
@@ -8,9 +9,11 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	_ "github.com/glebarez/go-sqlite"
 )
@@ -23,10 +26,15 @@ const (
 	FLAG_SHELL    = "shell"
 	DEFAULT_SHELL = "/bin/sh"
 	HELP_SHELL    = "Filepath for shell to use when measuring metrics"
+
+	FLAG_PERIOD    = "period"
+	DEFAULT_PERIOD = 20 * time.Second
+	HELP_PERIOD    = "How often to take new measurements"
 )
 
 type params_measure struct {
 	db_path, shell string
+	period         time.Duration
 }
 
 type params_serve struct {
@@ -78,19 +86,33 @@ CREATE TABLE IF NOT EXISTS tinmon_metric_%s(
 	return nil
 }
 
-func run_metrics(shell string, metrics []*metric) error {
-	for n, m := range metrics {
-		log.Printf("Running command %d/%d: %q\n", n+1, len(metrics), m.command)
-		cmd := exec.Command(shell, "-c", m.command)
-		out, err := cmd.Output()
-		if err != nil {
-			log.Println("... run failed: ", err)
-			continue
+func run_metrics(ctx context.Context, period time.Duration, shell string, metrics []*metric) {
+	log.Println("Entering measurement loop with period of ", period, "...")
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(period):
+			for n, m := range metrics {
+				n := n
+				sctx, cf := context.WithTimeout(ctx, period/2+1)
+				defer cf()
+				go func(sctx context.Context) {
+					log.Printf(
+						"Running command %d/%d: %q\n",
+						n+1, len(metrics), m.command)
+					cmd := exec.CommandContext(sctx, shell, "-c", m.command)
+					out, err := cmd.Output()
+					if err != nil {
+						log.Println("... run failed: ", err)
+						return
+					}
+					cleaned := strings.TrimSpace(string(out))
+					log.Printf("... run worked and returned: %q\n", cleaned)
+				}(sctx)
+			}
 		}
-		cleaned := strings.TrimSpace(string(out))
-		log.Printf("... run worked and returned: %q\n", cleaned)
 	}
-	return nil
 }
 
 func validate_metrics(metrics []*metric) error {
@@ -136,7 +158,17 @@ func measure(p *params_measure) {
 		log.Fatal("cannot proceed with measure: ", err)
 	}
 
-	run_metrics(p.shell, metrics)
+	ctx, cf := context.WithCancel(context.Background())
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		for range c {
+			cf()
+			fmt.Println("got SIGINT -- bailing")
+		}
+	}()
+	run_metrics(ctx, time.Second*15, p.shell, metrics)
 }
 
 func serve(p *params_serve) {
@@ -156,6 +188,7 @@ func main() {
 	cmd_measure := flag.NewFlagSet("measure", flag.ExitOnError)
 	cmd_measure.StringVar(&p_measure.db_path, FLAG_DB_PATH, DEFAULT_DB_PATH, HELP_DB_PATH)
 	cmd_measure.StringVar(&p_measure.shell, FLAG_SHELL, DEFAULT_SHELL, HELP_SHELL)
+	cmd_measure.DurationVar(&p_measure.period, FLAG_PERIOD, DEFAULT_PERIOD, HELP_PERIOD)
 
 	cmd_serve := flag.NewFlagSet("serve", flag.ExitOnError)
 	cmd_serve.StringVar(&p_serve.db_path, FLAG_DB_PATH, DEFAULT_DB_PATH, HELP_DB_PATH)
