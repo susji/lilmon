@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS tinmon_metric_%s(
 		log.Printf(
 			"Maybe creating table metric %d/%d: %s (%s)\n",
 			n+1, len(metrics), m.name, m.description)
-		// XXX Make sure metric name is suitable for query expansion
+
 		_, err := db.Query(fmt.Sprintf(template_table, m.name))
 		if err != nil {
 			log.Printf("failed to create table for metric %s: %v ", m.name, err)
