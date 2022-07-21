@@ -7,7 +7,7 @@ import (
 	_ "github.com/glebarez/go-sqlite"
 )
 
-func main() {
+func db_init() *sql.DB {
 	db_filename := "/tmp/tinmon.sqlite"
 	db, err := sql.Open("sqlite", db_filename)
 	if err != nil {
@@ -20,4 +20,15 @@ func main() {
 	} else {
 		log.Println("database version: ", db_version)
 	}
+	return db
+}
+
+func main() {
+	db := db_init()
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Println("warning: error when closing database: ", err)
+		}
+	}()
+
 }
