@@ -72,7 +72,7 @@ func db_migrate(db *sql.DB, metrics []*metric) error {
 CREATE TABLE IF NOT EXISTS tinmon_metric_%s(
     id INTEGER PRIMARY KEY,
     value DOUBLE PRECISION,
-    timestamp DATETIME_DEFAULT CURRENT_TIMESTAMP
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 `
 	in_err := false
