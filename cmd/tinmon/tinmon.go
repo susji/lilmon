@@ -176,6 +176,6 @@ func main() {
 		fmt.Println()
 		os.Exit(0)
 	default:
-		log.Fatal("unknown subcomand: ", os.Args[1])
+		log.Fatal("unknown subcommand: ", os.Args[1])
 	}
 }
