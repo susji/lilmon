@@ -12,6 +12,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -45,6 +46,11 @@ type metric struct {
 	name, description, command string
 }
 
+type measurement struct {
+	metric *metric
+	value  float64
+}
+
 func db_init(db_path string) *sql.DB {
 	db, err := sql.Open("sqlite", db_path)
 	if err != nil {
@@ -56,6 +62,7 @@ func db_init(db_path string) *sql.DB {
 		log.Println("warning: unable to get sqlite version: ", err)
 	} else {
 		log.Println("database version: ", db_version)
+
 	}
 	return db
 }
@@ -86,15 +93,38 @@ CREATE TABLE IF NOT EXISTS tinmon_metric_%s(
 	return nil
 }
 
-func run_metrics(ctx context.Context, period time.Duration, shell string, metrics []*metric) {
+func metric_inserter(ctx context.Context, db *sql.DB, results <-chan measurement) {
+	template_insert := `INSERT INTO tinmon_metric_%s(value) VALUES (?)`
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case result := <-results:
+			_, err := db.ExecContext(
+				ctx,
+				fmt.Sprintf(template_insert, result.metric.name),
+				result.value)
+			if err != nil {
+				log.Printf(
+					"metric insert failed for %s with value %f: %v\n",
+					result.metric.name, result.value, err)
+			}
+		}
+	}
+}
+
+func run_metrics(ctx context.Context, db *sql.DB, period time.Duration, shell string,
+	metrics []*metric, results chan<- measurement) {
+
 	log.Println("Entering measurement loop with period of ", period, "...")
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-time.After(period):
-			for n, m := range metrics {
-				n := n
+			for _n, _m := range metrics {
+				n := _n
+				m := _m
 				sctx, cf := context.WithTimeout(ctx, period/2+1)
 				defer cf()
 				go func(sctx context.Context) {
@@ -109,6 +139,18 @@ func run_metrics(ctx context.Context, period time.Duration, shell string, metric
 					}
 					cleaned := strings.TrimSpace(string(out))
 					log.Printf("... run worked and returned: %q\n", cleaned)
+
+					val, err := strconv.ParseFloat(cleaned, 64)
+					if err != nil {
+						log.Printf("... but it's not floaty: %v\n", err)
+						return
+					}
+
+					results <- measurement{
+						metric: m,
+						value:  val,
+					}
+
 				}(sctx)
 			}
 		}
@@ -160,15 +202,18 @@ func measure(p *params_measure) {
 
 	ctx, cf := context.WithCancel(context.Background())
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	ci := make(chan os.Signal, 1)
+	signal.Notify(ci, os.Interrupt)
 	go func() {
-		for range c {
+		for range ci {
 			cf()
 			fmt.Println("got SIGINT -- bailing")
 		}
 	}()
-	run_metrics(ctx, time.Second*15, p.shell, metrics)
+
+	cm := make(chan measurement)
+	go metric_inserter(ctx, db, cm)
+	run_metrics(ctx, db, time.Second*15, p.shell, metrics, cm)
 }
 
 func serve(p *params_serve) {
