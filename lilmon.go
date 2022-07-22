@@ -33,6 +33,10 @@ const (
 	HELP_PERIOD    = "How often to take new measurements"
 )
 
+const (
+	DEFAULT_RETENTION_TIME = 10 * time.Minute
+)
+
 type params_measure struct {
 	db_path, shell string
 	period         time.Duration
@@ -49,6 +53,20 @@ type metric struct {
 type measurement struct {
 	metric *metric
 	value  float64
+}
+
+const (
+	DB_TASK_PRUNE_TABLE = iota
+	DB_TASK_INSERT
+)
+
+type db_task struct {
+	kind int
+
+	prune_metric_name      string
+	prune_retention_period time.Duration
+
+	insert_measurement *measurement
 }
 
 func db_init(db_path string) *sql.DB {
@@ -94,28 +112,51 @@ CREATE INDEX IF NOT EXISTS index_lilmon_metric_%s
 	return nil
 }
 
-func metric_inserter(ctx context.Context, db *sql.DB, results <-chan measurement) {
-	template_insert := `INSERT INTO lilmon_metric_%s(value) VALUES (?)`
+func db_writer(ctx context.Context, db *sql.DB, tasks <-chan db_task) {
+	template_insert := `INSERT INTO lilmon_metric_%s (value) VALUES (?)`
+	template_prune := `DELETE FROM lilmon_metric_%s WHERE timestamp < DATETIME('now', '-%d seconds')`
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case result := <-results:
-			_, err := db.ExecContext(
-				ctx,
-				fmt.Sprintf(template_insert, result.metric.name),
-				result.value)
-			if err != nil {
+		case task := <-tasks:
+			switch task.kind {
+			case DB_TASK_INSERT:
+				metric := task.insert_measurement.metric.name
+				value := task.insert_measurement.value
+				_, err := db.ExecContext(
+					ctx,
+					fmt.Sprintf(template_insert, metric),
+					value)
+				if err != nil {
+					log.Printf(
+						"metric insert failed for %s with value %f: %v\n",
+						metric, value, err)
+				}
+			case DB_TASK_PRUNE_TABLE:
+				metric := task.prune_metric_name
+				retention_period := task.prune_retention_period
+
 				log.Printf(
-					"metric insert failed for %s with value %f: %v\n",
-					result.metric.name, result.value, err)
+					"Pruning metric %s for older than %s entries.\n",
+					metric, retention_period)
+				q := fmt.Sprintf(
+					template_prune,
+					metric,
+					int64(retention_period/time.Second))
+				_, err := db.ExecContext(ctx, q)
+				if err != nil {
+					log.Println("Pruning failed: ", err)
+				}
+			default:
+				panic(fmt.Sprintf("This is a bug: db_task.kind == %d", task.kind))
 			}
 		}
 	}
 }
 
 func run_metrics(ctx context.Context, db *sql.DB, period time.Duration, shell string,
-	metrics []*metric, results chan<- measurement) {
+	metrics []*metric, tasks chan<- db_task) {
 
 	log.Println("Entering measurement loop with period of ", period, "...")
 	_cur := 0
@@ -156,10 +197,12 @@ func run_metrics(ctx context.Context, db *sql.DB, period time.Duration, shell st
 						return
 					}
 
-					results <- measurement{
-						metric: m,
-						value:  val,
-					}
+					tasks <- db_task{
+						kind: DB_TASK_INSERT,
+						insert_measurement: &measurement{
+							metric: m,
+							value:  val,
+						}}
 
 				}(sctx)
 			}
@@ -181,6 +224,25 @@ func validate_metrics(metrics []*metric) error {
 		return errors.New("one or more metrics did not validate")
 	}
 	return nil
+}
+
+func db_pruner(ctx context.Context, tasks chan<- db_task, metrics []*metric, retention_period time.Duration) {
+	PRUNE_PERIOD := 15 * time.Second
+	log.Println("Entering pruning loop with period of ", PRUNE_PERIOD)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(PRUNE_PERIOD):
+			for _, m := range metrics {
+				tasks <- db_task{
+					kind:                   DB_TASK_PRUNE_TABLE,
+					prune_metric_name:      m.name,
+					prune_retention_period: retention_period,
+				}
+			}
+		}
+	}
 }
 
 func measure(p *params_measure) {
@@ -221,9 +283,10 @@ func measure(p *params_measure) {
 		}
 	}()
 
-	cm := make(chan measurement)
-	go metric_inserter(ctx, db, cm)
-	run_metrics(ctx, db, time.Second*15, p.shell, metrics, cm)
+	ct := make(chan db_task)
+	go db_writer(ctx, db, ct)
+	go db_pruner(ctx, ct, metrics, DEFAULT_RETENTION_TIME)
+	run_metrics(ctx, db, time.Second*15, p.shell, metrics, ct)
 }
 
 func serve(p *params_serve) {
