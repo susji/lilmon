@@ -273,6 +273,7 @@ func db_pruner(ctx context.Context, tasks chan<- db_task, metrics []*metric, ret
 
 func measure(p *params_measure) {
 	db := db_init(p.db_path)
+	log.Println("Opening SQLite DB at ", p.db_path)
 	defer func() {
 		if err := db.Close(); err != nil {
 			log.Println("warning: error when closing database: ", err)
@@ -301,7 +302,7 @@ func measure(p *params_measure) {
 	run_metrics(ctx, db, time.Second*15, p.shell, metrics, ct)
 }
 
-func serve_index_gen(db *sql.DB) http.HandlerFunc {
+func serve_index_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintln(w, `
 <html>
@@ -309,6 +310,23 @@ func serve_index_gen(db *sql.DB) http.HandlerFunc {
   </head>
   <body>
 `)
+		// XXXX Do proper html templating here
+		indent := `    `
+		for n, m := range metrics {
+			fmt.Fprintln(w, indent, "<p>")
+			fmt.Fprintln(
+				w,
+				indent, "<pre>", n, ": ",
+				m.name, ": ",
+				m.description, "</pre>")
+			fmt.Fprintf(
+				w,
+				`%s<img src="/graph?metric=%s">`,
+				indent,
+				m.name)
+			fmt.Fprintln(w)
+			fmt.Fprintln(w, "    </p>")
+		}
 		fmt.Fprintln(w, `
     <hr>
     <pre>lilmon</pre>
@@ -326,7 +344,7 @@ func graph_generate(metric string, w io.Writer) error {
 	return nil
 }
 
-func serve_graph_gen(db *sql.DB) http.HandlerFunc {
+func serve_graph_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		v := req.URL.Query()
 		metric, ok1 := v["metric"]
@@ -412,8 +430,8 @@ func serve(p *params_serve) {
 		log.Fatal("cannot proceed with serve: ", err)
 	}
 
-	http.HandleFunc("/", serve_index_gen(db))
-	http.HandleFunc("/graph", serve_graph_gen(db))
+	http.HandleFunc("/", serve_index_gen(db, metrics))
+	http.HandleFunc("/graph", serve_graph_gen(db, metrics))
 	log.Println("Listening at address ", p.addr)
 	http.ListenAndServe(p.addr, nil)
 }
