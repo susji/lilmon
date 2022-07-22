@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -31,6 +32,10 @@ const (
 	FLAG_PERIOD    = "period"
 	DEFAULT_PERIOD = 20 * time.Second
 	HELP_PERIOD    = "How often to take new measurements"
+
+	FLAG_ADDR    = "addr"
+	DEFAULT_ADDR = "localhost:15515"
+	HELP_ADDR    = "HTTP listening address"
 )
 
 const (
@@ -44,6 +49,7 @@ type params_measure struct {
 
 type params_serve struct {
 	db_path string
+	addr    string
 }
 
 type metric struct {
@@ -289,8 +295,22 @@ func measure(p *params_measure) {
 	run_metrics(ctx, db, time.Second*15, p.shell, metrics, ct)
 }
 
-func serve(p *params_serve) {
+func serve_index(w http.ResponseWriter, req *http.Request) {
+	fmt.Fprintln(w, "<pre>lilmon</pre>")
+}
 
+func serve_graph(w http.ResponseWriter, req *http.Request) {
+	gb := []byte{}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Write(gb)
+}
+
+func serve(p *params_serve) {
+	http.HandleFunc("/", serve_index)
+	http.HandleFunc("/graph", serve_graph)
+	log.Println("Listening at address ", p.addr)
+	http.ListenAndServe(p.addr, nil)
 }
 
 func main() {
@@ -310,6 +330,7 @@ func main() {
 
 	cmd_serve := flag.NewFlagSet("serve", flag.ExitOnError)
 	cmd_serve.StringVar(&p_serve.db_path, FLAG_DB_PATH, DEFAULT_DB_PATH, HELP_DB_PATH)
+	cmd_serve.StringVar(&p_serve.addr, FLAG_ADDR, DEFAULT_ADDR, HELP_ADDR)
 
 	switch os.Args[1] {
 	case "measure":
