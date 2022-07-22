@@ -274,21 +274,7 @@ func measure(p *params_measure) {
 		}
 	}()
 
-	metrics := []*metric{
-		&metric{
-			name:        "n_temp_files",
-			description: "count of files under /tmp",
-			command:     "find /tmp/ -type f | wc -l",
-		},
-		&metric{
-			name:        "n_memory_pages_used",
-			description: "pages of memory in use",
-			command:     "vm_stat |fgrep 'Pages active:'|cut -d ':' -f 2|cut -d '.' -f1",
-		},
-	}
-	if err := validate_metrics(metrics); err != nil {
-		log.Fatal("cannot proceed with measure: ", err)
-	}
+	metrics := metrics_get()
 	if err := db_migrate(db, metrics); err != nil {
 		log.Fatal("cannot proceed with measure: ", err)
 	}
@@ -310,18 +296,20 @@ func measure(p *params_measure) {
 	run_metrics(ctx, db, time.Second*15, p.shell, metrics, ct)
 }
 
-func serve_index(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprintln(w, `
+func serve_index_gen(metrics []*metric) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		fmt.Fprintln(w, `
 <html>
   <head>
   </head>
   <body>
 `)
-	fmt.Fprintln(w, `
+		fmt.Fprintln(w, `
     <hr>
     <pre>lilmon</pre>
   </body>
 </html>`)
+	}
 }
 
 func graph_generate(metric string, w io.Writer) error {
@@ -403,10 +391,29 @@ func serve_graph(w http.ResponseWriter, req *http.Request) {
 }
 
 func serve(p *params_serve) {
-	http.HandleFunc("/", serve_index)
+	http.HandleFunc("/", serve_index_gen(metrics_get()))
 	http.HandleFunc("/graph", serve_graph)
 	log.Println("Listening at address ", p.addr)
 	http.ListenAndServe(p.addr, nil)
+}
+
+func metrics_get() []*metric {
+	metrics := []*metric{
+		&metric{
+			name:        "n_temp_files",
+			description: "count of files under /tmp",
+			command:     "find /tmp/ -type f | wc -l",
+		},
+		&metric{
+			name:        "n_memory_pages_used",
+			description: "pages of memory in use",
+			command:     "vm_stat |fgrep 'Pages active:'|cut -d ':' -f 2|cut -d '.' -f1",
+		},
+	}
+	if err := validate_metrics(metrics); err != nil {
+		log.Fatal("cannot proceed with measure: ", err)
+	}
+	return metrics
 }
 
 func main() {
