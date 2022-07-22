@@ -51,6 +51,11 @@ const (
 )
 
 var (
+	COLOR_BG = color.RGBA{230, 230, 230, 255}
+	COLOR_FG = color.RGBA{255, 0, 0, 255}
+)
+
+var (
 	RE_NAME = regexp.MustCompile("^[-_a-zA-Z0-9]{1,512}$")
 )
 
@@ -296,7 +301,7 @@ func measure(p *params_measure) {
 	run_metrics(ctx, db, time.Second*15, p.shell, metrics, ct)
 }
 
-func serve_index_gen(metrics []*metric) http.HandlerFunc {
+func serve_index_gen(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintln(w, `
 <html>
@@ -314,85 +319,99 @@ func serve_index_gen(metrics []*metric) http.HandlerFunc {
 
 func graph_generate(metric string, w io.Writer) error {
 	g := image.NewRGBA(image.Rect(0, 0, 400, 200))
-	COLOR_RED := color.RGBA{255, 0, 0, 255}
-	draw.Draw(g, g.Bounds(), &image.Uniform{COLOR_RED}, image.ZP, draw.Src)
+	draw.Draw(g, g.Bounds(), &image.Uniform{COLOR_BG}, image.ZP, draw.Src)
 	if err := png.Encode(w, g); err != nil {
 		return err
 	}
 	return nil
 }
 
-func serve_graph(w http.ResponseWriter, req *http.Request) {
-	v := req.URL.Query()
-	metric, ok1 := v["metric"]
-	time_start_raw, ok2 := v["time_start"]
-	time_end_raw, ok3 := v["time_end"]
+func serve_graph_gen(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		v := req.URL.Query()
+		metric, ok1 := v["metric"]
+		time_start_raw, ok2 := v["time_start"]
+		time_end_raw, ok3 := v["time_end"]
 
-	if !ok1 {
-		log.Println("serve_graph: metric name missing")
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintln(w, "missing metric name")
-		return
-	}
-	if !is_metric_name_valid(metric[0]) {
-		log.Println("serve_graph: metric name invalid: ", metric[0])
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintln(w, "bad metric name")
-		return
-	}
-
-	var time_start, time_end time.Time
-
-	if ok2 {
-		time_start_seconds, err := strconv.ParseInt(time_start_raw[0], 10, 64)
-		if err != nil {
-			log.Println("serve_graph: bad time_start: ", err)
+		if !ok1 {
+			log.Println("serve_graph: metric name missing")
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "bad time_start")
+			fmt.Fprintln(w, "missing metric name")
 			return
 		}
-		time_start = time.Unix(time_start_seconds, 0)
-	} else {
-		time_start = time.Now().Add(-DEFAULT_GRAPH_PERIOD)
-	}
-	if ok3 {
-		time_end_seconds, err := strconv.ParseInt(time_end_raw[0], 10, 64)
-		if err != nil {
-			log.Println("serve_graph: bad time_end: ", err)
+		if !is_metric_name_valid(metric[0]) {
+			log.Println("serve_graph: metric name invalid: ", metric[0])
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "bad time_end")
+			fmt.Fprintln(w, "bad metric name")
 			return
 		}
-		time_end = time.Unix(time_end_seconds, 0)
-	} else {
-		time_end = time.Now()
-	}
-	if time_start.After(time_end) {
-		log.Println("serve_graph: bad time range: ", time_start, time_end)
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintln(w, "bad time range")
-		return
-	}
 
-	log.Printf("serve_graph: Drawing graph for %q [%s, %s]\n", metric[0], time_start, time_end)
+		var time_start, time_end time.Time
 
-	b := bytes.Buffer{}
-	if err := graph_generate(metric[0], &b); err != nil {
-		log.Println("serve_graph: PNG encoding failed: ", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintln(w, "graph generation failed")
-		return
+		if ok2 {
+			time_start_seconds, err := strconv.ParseInt(time_start_raw[0], 10, 64)
+			if err != nil {
+				log.Println("serve_graph: bad time_start: ", err)
+				w.WriteHeader(http.StatusBadRequest)
+				fmt.Fprintln(w, "bad time_start")
+				return
+			}
+			time_start = time.Unix(time_start_seconds, 0)
+		} else {
+			time_start = time.Now().Add(-DEFAULT_GRAPH_PERIOD)
+		}
+		if ok3 {
+			time_end_seconds, err := strconv.ParseInt(time_end_raw[0], 10, 64)
+			if err != nil {
+				log.Println("serve_graph: bad time_end: ", err)
+				w.WriteHeader(http.StatusBadRequest)
+				fmt.Fprintln(w, "bad time_end")
+				return
+			}
+			time_end = time.Unix(time_end_seconds, 0)
+		} else {
+			time_end = time.Now()
+		}
+		if time_start.After(time_end) {
+			log.Println("serve_graph: bad time range: ", time_start, time_end)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintln(w, "bad time range")
+			return
+		}
+
+		log.Printf(
+			"serve_graph: Drawing graph for %q [%s, %s]\n",
+			metric[0], time_start, time_end)
+
+		b := bytes.Buffer{}
+		if err := graph_generate(metric[0], &b); err != nil {
+			log.Println("serve_graph: PNG encoding failed: ", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintln(w, "graph generation failed")
+			return
+		}
+		gb := b.Bytes()
+		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("Content-Length", strconv.Itoa(len(gb)))
+		w.WriteHeader(http.StatusOK)
+		w.Write(gb)
 	}
-	gb := b.Bytes()
-	w.Header().Set("Content-Type", "image/png")
-	w.Header().Set("Content-Length", strconv.Itoa(len(gb)))
-	w.WriteHeader(http.StatusOK)
-	w.Write(gb)
 }
 
 func serve(p *params_serve) {
-	http.HandleFunc("/", serve_index_gen(metrics_get()))
-	http.HandleFunc("/graph", serve_graph)
+	db := db_init(p.db_path)
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Println("warning: error when closing database: ", err)
+		}
+	}()
+	metrics := metrics_get()
+	if err := db_migrate(db, metrics); err != nil {
+		log.Fatal("cannot proceed with serve: ", err)
+	}
+
+	http.HandleFunc("/", serve_index_gen(db))
+	http.HandleFunc("/graph", serve_graph_gen(db))
 	log.Println("Listening at address ", p.addr)
 	http.ListenAndServe(p.addr, nil)
 }
