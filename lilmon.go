@@ -72,16 +72,17 @@ func db_migrate(db *sql.DB, metrics []*metric) error {
 CREATE TABLE IF NOT EXISTS lilmon_metric_%s (
     id INTEGER PRIMARY KEY,
     value DOUBLE PRECISION,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX IF NOT EXISTS index_lilmon_metric_%s
+    ON lilmon_metric_%s (value, timestamp);
 `
 	in_err := false
 	for n, m := range metrics {
 		log.Printf(
-			"Maybe creating table metric %d/%d: %s (%s)\n",
+			"Maybe creating tables and indices for metric %d/%d: %s (%s)\n",
 			n+1, len(metrics), m.name, m.description)
 
-		_, err := db.Query(fmt.Sprintf(template_table, m.name))
+		_, err := db.Query(fmt.Sprintf(template_table, m.name, m.name, m.name))
 		if err != nil {
 			log.Printf("failed to create table for metric %s: %v ", m.name, err)
 			in_err = true
