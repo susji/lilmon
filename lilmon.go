@@ -40,6 +40,11 @@ const (
 
 const (
 	DEFAULT_RETENTION_TIME = 7 * 24 * time.Hour
+	DEFAULT_GRAPH_PERIOD   = 1 * time.Hour
+)
+
+var (
+	RE_NAME = regexp.MustCompile("^[-_a-zA-Z0-9]{1,512}$")
 )
 
 type params_measure struct {
@@ -216,12 +221,15 @@ func run_metrics(ctx context.Context, db *sql.DB, period time.Duration, shell st
 	}
 }
 
+func is_metric_name_valid(name string) bool {
+	return RE_NAME.MatchString(name)
+}
+
 func validate_metrics(metrics []*metric) error {
 	in_err := false
-	re_name := regexp.MustCompile("^[-_a-zA-Z0-9]{1,512}$")
 	for n, m := range metrics {
 		log.Printf("Validating metric name %d/%d: %s\n", n+1, len(metrics), m.name)
-		if !re_name.MatchString(m.name) {
+		if !is_metric_name_valid(m.name) {
 			log.Println("... and the name is not valid.")
 			in_err = true
 		}
@@ -296,10 +304,73 @@ func measure(p *params_measure) {
 }
 
 func serve_index(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprintln(w, "<pre>lilmon</pre>")
+	fmt.Fprintln(w, `
+<html>
+  <head>
+  </head>
+  <body>
+`)
+	fmt.Fprintln(w, `
+    <hr>
+    <pre>lilmon</pre>
+  </body>
+</html>`)
 }
 
 func serve_graph(w http.ResponseWriter, req *http.Request) {
+	v := req.URL.Query()
+	metric, ok1 := v["metric"]
+	time_start_raw, ok2 := v["time_start"]
+	time_end_raw, ok3 := v["time_end"]
+
+	if !ok1 {
+		log.Println("serve_graph: metric name missing")
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintln(w, "missing metric name")
+		return
+	}
+	if !is_metric_name_valid(metric[0]) {
+		log.Println("serve_graph: metric name invalid: ", metric[0])
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintln(w, "bad metric name")
+		return
+	}
+
+	var time_start, time_end time.Time
+
+	if ok2 {
+		time_start_seconds, err := strconv.ParseInt(time_start_raw[0], 10, 64)
+		if err != nil {
+			log.Println("serve_graph: bad time_start: ", err)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintln(w, "bad time_start")
+			return
+		}
+		time_start = time.Unix(time_start_seconds, 0)
+	} else {
+		time_start = time.Now().Add(-DEFAULT_GRAPH_PERIOD)
+	}
+	if ok3 {
+		time_end_seconds, err := strconv.ParseInt(time_end_raw[0], 10, 64)
+		if err != nil {
+			log.Println("serve_graph: bad time_end: ", err)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintln(w, "bad time_end")
+			return
+		}
+		time_end = time.Unix(time_end_seconds, 0)
+	} else {
+		time_end = time.Now()
+	}
+	if time_start.After(time_end) {
+		log.Println("serve_graph: bad time range: ", time_start, time_end)
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintln(w, "bad time range")
+		return
+
+	}
+
+	log.Printf("serve_graph: Drawing graph for %q [%s, %s]\n", metric[0], time_start, time_end)
 	gb := []byte{}
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/octet-stream")
