@@ -399,7 +399,9 @@ func serve_graph_gen(db *sql.DB) http.HandlerFunc {
 }
 
 func serve(p *params_serve) {
-	db := db_init(p.db_path)
+	db_path := fmt.Sprintf("%s?mode=ro", p.db_path)
+	log.Println("Opening SQLite DB at ", db_path)
+	db := db_init(db_path)
 	defer func() {
 		if err := db.Close(); err != nil {
 			log.Println("warning: error when closing database: ", err)
