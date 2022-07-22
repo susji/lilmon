@@ -335,7 +335,43 @@ func serve_index_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
 	}
 }
 
-func graph_generate(metric string, w io.Writer) error {
+func graph_generate(db *sql.DB, metric string, time_start, time_end time.Time, w io.Writer) error {
+	template_select_values := `
+SELECT timestamp, value FROM lilmon_metric_%s
+    WHERE
+        timestamp >= DATETIME(%d, 'unixepoch')
+        AND timestamp <= DATETIME(%d, 'unixepoch')
+    ORDER BY timestamp ASC`
+	q := fmt.Sprintf(
+		template_select_values,
+		metric,
+		time_start.Unix(),
+		time_end.Unix())
+	rows, err := db.Query(q)
+	if err != nil {
+		log.Println("graph_generate: unable to select rows: ", err)
+		return err
+	}
+	defer rows.Close()
+
+	type datapoint struct {
+		ts    time.Time
+		value float64
+	}
+
+	dps := []datapoint{}
+	for rows.Next() {
+		var ts time.Time
+		var value float64
+
+		if err := rows.Scan(&ts, &value); err != nil {
+			log.Println("graph_generate: row scan failed: ", err)
+			break
+		}
+		dps = append(dps, datapoint{ts: ts, value: value})
+	}
+	log.Println("graph_generate: got ", len(dps), "datapoints.")
+
 	g := image.NewRGBA(image.Rect(0, 0, 400, 200))
 	draw.Draw(g, g.Bounds(), &image.Uniform{COLOR_BG}, image.ZP, draw.Src)
 	if err := png.Encode(w, g); err != nil {
@@ -402,7 +438,7 @@ func serve_graph_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
 			metric[0], time_start, time_end)
 
 		b := bytes.Buffer{}
-		if err := graph_generate(metric[0], &b); err != nil {
+		if err := graph_generate(db, metric[0], time_start, time_end, &b); err != nil {
 			log.Println("serve_graph: PNG encoding failed: ", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintln(w, "graph generation failed")
