@@ -21,8 +21,8 @@ import (
 
 const (
 	FLAG_DB_PATH    = "db-path"
-	DEFAULT_DB_PATH = "/tmp/tinmon.sqlite"
-	HELP_DB_PATH    = "Filepath to tinmon SQLite database"
+	DEFAULT_DB_PATH = "/tmp/lilmon.sqlite"
+	HELP_DB_PATH    = "Filepath to lilmon SQLite database"
 
 	FLAG_SHELL    = "shell"
 	DEFAULT_SHELL = "/bin/sh"
@@ -69,7 +69,7 @@ func db_init(db_path string) *sql.DB {
 
 func db_migrate(db *sql.DB, metrics []*metric) error {
 	template_table := `
-CREATE TABLE IF NOT EXISTS tinmon_metric_%s(
+CREATE TABLE IF NOT EXISTS lilmon_metric_%s (
     id INTEGER PRIMARY KEY,
     value DOUBLE PRECISION,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS tinmon_metric_%s(
 }
 
 func metric_inserter(ctx context.Context, db *sql.DB, results <-chan measurement) {
-	template_insert := `INSERT INTO tinmon_metric_%s(value) VALUES (?)`
+	template_insert := `INSERT INTO lilmon_metric_%s(value) VALUES (?)`
 	for {
 		select {
 		case <-ctx.Done():

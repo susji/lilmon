@@ -1,4 +1,4 @@
-module github.com/susji/tinmon
+module github.com/susji/lilmon
 
 go 1.18
 

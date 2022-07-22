@@ -1,6 +1,6 @@
-# tinmon
+# lilmon
 
-Tiny monitoring system
+This is a little monitoring system.
 
 # TODO
 
