@@ -34,7 +34,7 @@ const (
 )
 
 const (
-	DEFAULT_RETENTION_TIME = 10 * time.Minute
+	DEFAULT_RETENTION_TIME = 7 * 24 * time.Hour
 )
 
 type params_measure struct {
