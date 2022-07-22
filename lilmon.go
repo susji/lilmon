@@ -1,11 +1,18 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"errors"
 	"flag"
 	"fmt"
+	"image"
+	"image/color"
+	"image/draw"
+	"image/png"
+	_ "image/png"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -317,6 +324,16 @@ func serve_index(w http.ResponseWriter, req *http.Request) {
 </html>`)
 }
 
+func graph_generate(metric string, w io.Writer) error {
+	g := image.NewRGBA(image.Rect(0, 0, 400, 200))
+	COLOR_RED := color.RGBA{255, 0, 0, 255}
+	draw.Draw(g, g.Bounds(), &image.Uniform{COLOR_RED}, image.ZP, draw.Src)
+	if err := png.Encode(w, g); err != nil {
+		return err
+	}
+	return nil
+}
+
 func serve_graph(w http.ResponseWriter, req *http.Request) {
 	v := req.URL.Query()
 	metric, ok1 := v["metric"]
@@ -367,13 +384,21 @@ func serve_graph(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintln(w, "bad time range")
 		return
-
 	}
 
 	log.Printf("serve_graph: Drawing graph for %q [%s, %s]\n", metric[0], time_start, time_end)
-	gb := []byte{}
+
+	b := bytes.Buffer{}
+	if err := graph_generate(metric[0], &b); err != nil {
+		log.Println("serve_graph: PNG encoding failed: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(w, "graph generation failed")
+		return
+	}
+	gb := b.Bytes()
+	w.Header().Set("Content-Type", "image/png")
+	w.Header().Set("Content-Length", strconv.Itoa(len(gb)))
 	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Write(gb)
 }
 
