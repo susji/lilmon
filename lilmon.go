@@ -11,7 +11,6 @@ import (
 	"image/color"
 	"image/draw"
 	"image/png"
-	_ "image/png"
 	"io"
 	"log"
 	"math"
@@ -410,8 +409,23 @@ func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time)
 }
 
 func graph_draw(values []float64, labels []time.Time, val_min, val_max float64) image.Image {
-	g := image.NewRGBA(image.Rect(0, 0, DEFAULT_GRAPH_WIDTH, DEFAULT_GRAPH_HEIGHT))
-	draw.Draw(g, g.Bounds(), &image.Uniform{COLOR_BG}, image.ZP, draw.Src)
+	w := DEFAULT_GRAPH_WIDTH
+	h := DEFAULT_GRAPH_HEIGHT
+	bin_w := w / len(values)
+	g := image.NewRGBA(image.Rect(0, 0, w, h))
+	draw.Draw(g, g.Bounds(), &image.Uniform{COLOR_BG}, image.Point{}, draw.Src)
+
+	marker_halfwidth := bin_w / 4
+	cur_x := bin_w / 2
+	range_val := val_max - val_min
+	for bin := 0; bin < len(values); bin++ {
+		cur_y := h - int(float64(h)/range_val*(values[bin]-val_min))
+		marker := image.Rect(
+			cur_x-marker_halfwidth, int(cur_y)-marker_halfwidth,
+			cur_x+marker_halfwidth, int(cur_y)+marker_halfwidth)
+		draw.Draw(g, marker, &image.Uniform{COLOR_FG}, image.Point{}, draw.Src)
+		cur_x += bin_w
+	}
 	return g
 }
 
