@@ -4,9 +4,12 @@ This is a little monitoring system.
 
 # TODO
 
-- [ ] configure metrics with a file
 - [x] prune metric tables for data beyond retention time
 - [x] index tables with timestamps
-- [ ] programmatically generate graphs
-- [ ] implement simple `serve` subcommand to display a monitoring interface
+- [x] programmatically generate graphs
+- [x] implement simple `serve` subcommand to display a monitoring interface
+- [ ] warn about running as `root`
+- [ ] configure metrics with a file
+- [ ] draw graph legend
+- [ ] render HTML with proper templates
 - [ ] cache graphs
