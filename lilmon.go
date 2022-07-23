@@ -26,6 +26,9 @@ import (
 	"time"
 
 	_ "github.com/glebarez/go-sqlite"
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/basicfont"
+	"golang.org/x/image/math/fixed"
 )
 
 const (
@@ -434,6 +437,19 @@ func graph_draw(values []float64, labels []time.Time, val_min, val_max float64) 
 		cur_x += bin_w
 	}
 	return g
+}
+
+func graph_label(img *image.RGBA, x, y int, label string) {
+	// https://stackoverflow.com/a/38300583
+	col := color.RGBA{200, 100, 0, 255}
+	point := fixed.Point26_6{fixed.I(x), fixed.I(y)}
+	d := &font.Drawer{
+		Dst:  img,
+		Src:  image.NewUniform(col),
+		Face: basicfont.Face7x13,
+		Dot:  point,
+	}
+	d.DrawString(label)
 }
 
 func db_datapoints_get(db *sql.DB, metric string, time_start, time_end time.Time) (
