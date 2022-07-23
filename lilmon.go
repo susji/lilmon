@@ -78,6 +78,11 @@ type measurement struct {
 	value  float64
 }
 
+type datapoint struct {
+	ts    time.Time
+	value float64
+}
+
 const (
 	DB_TASK_PRUNE_TABLE = iota
 	DB_TASK_INSERT
@@ -308,8 +313,7 @@ func serve_index_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
 <html>
   <head>
   </head>
-  <body>
-`)
+  <body>`)
 		// XXXX Do proper html templating here
 		indent := `    `
 		for n, m := range metrics {
@@ -335,6 +339,59 @@ func serve_index_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
 	}
 }
 
+func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time) (
+	[]float64, []time.Time) {
+
+	if time_start.After(time_end) {
+		panic(
+			fmt.Sprintf(
+				"This is a bug: time_start > time_end: %s > %s",
+				time_start, time_end))
+	}
+	// We assume datapoints are sorted in ascending timestamp order.
+	binned := make([]float64, bins, bins)
+	labels := make([]time.Time, bins, bins)
+	time_start_epoch := time_start.Unix()
+	time_end_epoch := time_end.Unix()
+	delta_t_bin_sec := (time_end_epoch - time_start_epoch) / bins
+	//
+	// Just histogramming, for three bins it would look like:
+	//
+	// time_start   bin1               bin2               bin3       time_end
+	//      .------------------+------------------+------------------.
+	//      | ts1   ts2   ts3  |               ts4| ts5              |
+	//      '------------------+------------------+------------------.
+	//
+	cur_dp_i := 0
+	ts_bin_left_sec := time_start_epoch
+	ts_bin_right_sec := time_start_epoch + delta_t_bin_sec
+	// Loop through each bin once and see how many timestamps we can fit in.
+	for cur_bin := int64(0); cur_bin < bins; cur_bin++ {
+		bin_value_sum := float64(0)
+		datapoints_in_bin := 0
+		// First sum together datapoints belonging to this bin...
+		for cur_dp_i < len(dps) {
+			dp_sec := dps[cur_dp_i].ts.Unix()
+			if dp_sec >= ts_bin_left_sec && dp_sec <= ts_bin_right_sec {
+				bin_value_sum += dps[cur_dp_i].value
+				datapoints_in_bin++
+				cur_dp_i++
+			} else {
+				break
+			}
+		}
+		// ... and then figure out the average value, and store it.
+		binned[cur_bin] = bin_value_sum / float64(datapoints_in_bin)
+		// Timestamp label is the average of bin left and right.
+		labels[cur_bin] = time.Unix((ts_bin_left_sec+ts_bin_right_sec)/2, 0)
+
+		// Slide bin timestamps over the next bin.
+		ts_bin_left_sec += delta_t_bin_sec
+		ts_bin_right_sec += delta_t_bin_sec
+	}
+	return binned, labels
+}
+
 func graph_generate(db *sql.DB, metric string, time_start, time_end time.Time, w io.Writer) error {
 	template_select_values := `
 SELECT timestamp, value FROM lilmon_metric_%s
@@ -353,12 +410,6 @@ SELECT timestamp, value FROM lilmon_metric_%s
 		return err
 	}
 	defer rows.Close()
-
-	type datapoint struct {
-		ts    time.Time
-		value float64
-	}
-
 	dps := []datapoint{}
 	for rows.Next() {
 		var ts time.Time
@@ -371,6 +422,10 @@ SELECT timestamp, value FROM lilmon_metric_%s
 		dps = append(dps, datapoint{ts: ts, value: value})
 	}
 	log.Println("graph_generate: got ", len(dps), "datapoints.")
+	binned, labels := bin_datapoints(dps, 40, time_start, time_end)
+
+	_ = binned
+	_ = labels
 
 	g := image.NewRGBA(image.Rect(0, 0, 400, 200))
 	draw.Draw(g, g.Bounds(), &image.Uniform{COLOR_BG}, image.ZP, draw.Src)
