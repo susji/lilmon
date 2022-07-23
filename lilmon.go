@@ -423,9 +423,10 @@ func graph_draw(values []float64, labels []time.Time, val_min, val_max float64) 
 
 	marker_halfwidth := bin_w / 4
 	cur_x := bin_w / 2
-	range_val := val_max - val_min
 	for bin := 0; bin < len(values); bin++ {
-		cur_y := h - int(float64(h)/range_val*(values[bin]-val_min))
+		// do Y calculations in zero reference, that is, normalize Y values as [0, 1].
+		norm_y := (values[bin] - val_min) / (val_max - val_min)
+		cur_y := math.Floor(float64(h) - float64(h)*norm_y)
 		marker := image.Rect(
 			cur_x-marker_halfwidth, int(cur_y)-marker_halfwidth,
 			cur_x+marker_halfwidth, int(cur_y)+marker_halfwidth)
