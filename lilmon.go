@@ -51,6 +51,7 @@ const (
 	DEFAULT_GRAPH_BINS     = 40
 	DEFAULT_GRAPH_WIDTH    = 400
 	DEFAULT_GRAPH_HEIGHT   = 200
+	DEFAULT_REFRESH_PERIOD = 60
 )
 
 var (
@@ -312,11 +313,13 @@ func measure(p *params_measure) {
 
 func serve_index_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprintln(w, `
+		fmt.Fprintf(w, `
 <html>
   <head>
+    <meta http-equiv="refresh" content="%d">
   </head>
-  <body>`)
+  <body>
+`, DEFAULT_REFRESH_PERIOD)
 		// XXXX Do proper html templating here
 		indent := `    `
 		for n, m := range metrics {
