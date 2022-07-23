@@ -409,7 +409,15 @@ func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time)
 	return binned, labels, val_min, val_max
 }
 
-func graph_generate(db *sql.DB, metric string, time_start, time_end time.Time, w io.Writer) error {
+func graph_draw(values []float64, labels []time.Time, val_min, val_max float64) image.Image {
+	g := image.NewRGBA(image.Rect(0, 0, DEFAULT_GRAPH_WIDTH, DEFAULT_GRAPH_HEIGHT))
+	draw.Draw(g, g.Bounds(), &image.Uniform{COLOR_BG}, image.ZP, draw.Src)
+	return g
+}
+
+func db_datapoints_get(db *sql.DB, metric string, time_start, time_end time.Time) (
+	[]datapoint, error) {
+
 	template_select_values := `
 SELECT timestamp, value FROM lilmon_metric_%s
     WHERE
@@ -424,7 +432,7 @@ SELECT timestamp, value FROM lilmon_metric_%s
 	rows, err := db.Query(q)
 	if err != nil {
 		log.Println("graph_generate: unable to select rows: ", err)
-		return err
+		return nil, err
 	}
 	defer rows.Close()
 	dps := []datapoint{}
@@ -438,17 +446,18 @@ SELECT timestamp, value FROM lilmon_metric_%s
 		}
 		dps = append(dps, datapoint{ts: ts, value: value})
 	}
+	return dps, nil
+}
+
+func graph_generate(db *sql.DB, metric string, time_start, time_end time.Time, w io.Writer) error {
+	dps, err := db_datapoints_get(db, metric, time_start, time_end)
+	if err != nil {
+		return err
+	}
 	log.Println("graph_generate: got ", len(dps), "datapoints.")
 	binned, labels, val_min, val_max := bin_datapoints(
 		dps, DEFAULT_GRAPH_BINS, time_start, time_end)
-
-	_ = binned
-	_ = labels
-	_ = val_min
-	_ = val_max
-
-	g := image.NewRGBA(image.Rect(0, 0, DEFAULT_GRAPH_WIDTH, DEFAULT_GRAPH_HEIGHT))
-	draw.Draw(g, g.Bounds(), &image.Uniform{COLOR_BG}, image.ZP, draw.Src)
+	g := graph_draw(binned, labels, val_min, val_max)
 	if err := png.Encode(w, g); err != nil {
 		return err
 	}
