@@ -48,6 +48,9 @@ const (
 const (
 	DEFAULT_RETENTION_TIME = 7 * 24 * time.Hour
 	DEFAULT_GRAPH_PERIOD   = 1 * time.Hour
+	DEFAULT_GRAPH_BINS     = 40
+	DEFAULT_GRAPH_WIDTH    = 400
+	DEFAULT_GRAPH_HEIGHT   = 200
 )
 
 var (
@@ -422,12 +425,12 @@ SELECT timestamp, value FROM lilmon_metric_%s
 		dps = append(dps, datapoint{ts: ts, value: value})
 	}
 	log.Println("graph_generate: got ", len(dps), "datapoints.")
-	binned, labels := bin_datapoints(dps, 40, time_start, time_end)
+	binned, labels := bin_datapoints(dps, DEFAULT_GRAPH_BINS, time_start, time_end)
 
 	_ = binned
 	_ = labels
 
-	g := image.NewRGBA(image.Rect(0, 0, 400, 200))
+	g := image.NewRGBA(image.Rect(0, 0, DEFAULT_GRAPH_WIDTH, DEFAULT_GRAPH_HEIGHT))
 	draw.Draw(g, g.Bounds(), &image.Uniform{COLOR_BG}, image.ZP, draw.Src)
 	if err := png.Encode(w, g); err != nil {
 		return err
