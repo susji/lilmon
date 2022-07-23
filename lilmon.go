@@ -68,7 +68,7 @@ var (
 	COLOR_FG    = color.RGBA{255, 0, 0, 255}
 	COLOR_LABEL = color.RGBA{0, 0, 0, 255}
 	// 01/02 03:04:05PM '06 -0700
-	DEFAULT_GRAPH_TS_FORMAT = "2006-01-02 03:04 MST"
+	TIMESTAMP_FORMAT = "2006-01-02 03:04 MST"
 )
 
 var (
@@ -453,8 +453,8 @@ func graph_draw(values []float64, labels []time.Time, val_min, val_max float64) 
 	graph_label(g, total_w-pad_w, DEFAULT_LABEL_MAX_Y0, label_max)
 	graph_label(g, total_w-pad_w, total_h-pad_h, label_min)
 
-	label_start := labels[0].Format(DEFAULT_GRAPH_TS_FORMAT)
-	label_end := labels[len(labels)-1].Format(DEFAULT_GRAPH_TS_FORMAT)
+	label_start := labels[0].Format(TIMESTAMP_FORMAT)
+	label_end := labels[len(labels)-1].Format(TIMESTAMP_FORMAT)
 	graph_label(g, 0, total_h, label_start)
 	graph_label(g, total_w-DEFAULT_LABEL_SHIFT_X, total_h, label_end)
 
