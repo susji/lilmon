@@ -471,9 +471,9 @@ SELECT timestamp, value FROM lilmon_metric_%s
 func graph_generate(db *sql.DB, metric string, time_start, time_end time.Time, w io.Writer) error {
 	dps, err := db_datapoints_get(db, metric, time_start, time_end)
 	if err != nil {
+		log.Println("graph_generate: error from DB get: ", err)
 		return err
 	}
-	log.Println("graph_generate: got ", len(dps), "datapoints.")
 	binned, labels, val_min, val_max := bin_datapoints(
 		dps, DEFAULT_GRAPH_BINS, time_start, time_end)
 	g := graph_draw(binned, labels, val_min, val_max)
