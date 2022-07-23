@@ -10,6 +10,6 @@ This is a little monitoring system.
 - [x] implement simple `serve` subcommand to display a monitoring interface
 - [x] make running as `root` harder
 - [ ] configure metrics with a file
-- [ ] draw graph legend
+- [x] draw min & max labels for graph axis
 - [ ] render HTML with proper templates
 - [ ] cache graphs
