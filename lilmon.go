@@ -323,7 +323,7 @@ func serve_index_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
 		// XXXX Do proper html templating here
 		indent := `    `
 		for n, m := range metrics {
-			fmt.Fprintln(w, indent, "<p>")
+			fmt.Fprintln(w, indent, "<div>")
 			fmt.Fprintln(
 				w,
 				indent, "<pre>", n, ": ",
@@ -335,7 +335,7 @@ func serve_index_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
 				indent,
 				m.name)
 			fmt.Fprintln(w)
-			fmt.Fprintln(w, "    </p>")
+			fmt.Fprintln(w, indent, "</div>")
 		}
 		fmt.Fprintf(w, `
     <hr>
