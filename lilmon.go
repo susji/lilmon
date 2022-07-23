@@ -50,7 +50,6 @@ const (
 )
 
 const (
-	DEFAULT_RETENTION_TIME   = 7 * 24 * time.Hour
 	DEFAULT_GRAPH_PERIOD     = 1 * time.Hour
 	DEFAULT_GRAPH_WIDTH      = 600
 	DEFAULT_GRAPH_HEIGHT     = 200
@@ -58,6 +57,8 @@ const (
 	DEFAULT_GRAPH_PAD_HEIGHT = 25
 	DEFAULT_GRAPH_BINS       = DEFAULT_GRAPH_WIDTH / 10
 	DEFAULT_LABEL_MAX_Y0     = 10
+	DEFAULT_LABEL_SHIFT_X    = DEFAULT_GRAPH_PAD_WIDTH * 3
+	DEFAULT_RETENTION_TIME   = 7 * 24 * time.Hour
 	DEFAULT_REFRESH_PERIOD   = 60
 	DEFAULT_PRUNE_PERIOD     = 15 * time.Minute
 )
@@ -66,6 +67,8 @@ var (
 	COLOR_BG    = color.RGBA{230, 230, 230, 255}
 	COLOR_FG    = color.RGBA{255, 0, 0, 255}
 	COLOR_LABEL = color.RGBA{0, 0, 0, 255}
+	// 01/02 03:04:05PM '06 -0700
+	DEFAULT_GRAPH_TS_FORMAT = "2006-01-02 03:04 MST"
 )
 
 var (
@@ -444,16 +447,23 @@ func graph_draw(values []float64, labels []time.Time, val_min, val_max float64) 
 		draw.Draw(g, marker, &image.Uniform{COLOR_FG}, image.Point{}, draw.Src)
 		cur_x += bin_w
 	}
+
 	label_max := strconv.FormatFloat(val_max, 'g', -1, 64)
 	label_min := strconv.FormatFloat(val_min, 'g', -1, 64)
 	graph_label(g, total_w-pad_w, DEFAULT_LABEL_MAX_Y0, label_max)
 	graph_label(g, total_w-pad_w, total_h-pad_h, label_min)
+
+	label_start := labels[0].Format(DEFAULT_GRAPH_TS_FORMAT)
+	label_end := labels[len(labels)-1].Format(DEFAULT_GRAPH_TS_FORMAT)
+	graph_label(g, 0, total_h, label_start)
+	graph_label(g, total_w-DEFAULT_LABEL_SHIFT_X, total_h, label_end)
+
 	return g
 }
 
 func graph_label(img *image.RGBA, x, y int, label string) {
 	// https://stackoverflow.com/a/38300583
-	point := fixed.Point26_6{fixed.I(x), fixed.I(y)}
+	point := fixed.Point26_6{X: fixed.I(x), Y: fixed.I(y)}
 	d := &font.Drawer{
 		Dst:  img,
 		Src:  image.NewUniform(COLOR_LABEL),
