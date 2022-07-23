@@ -351,10 +351,10 @@ func serve_index_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
 		fmt.Fprintf(w, `
     <hr>
     <pre>lilmon</pre>
-    <pre>%s</pre>
+    <pre>%s (autorefresh @ %d sec)</pre>
   </body>
 </html>
-`, time.Now().Format(time.RFC3339))
+`, time.Now().Format(TIMESTAMP_FORMAT), DEFAULT_REFRESH_PERIOD)
 	}
 }
 
