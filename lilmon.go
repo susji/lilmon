@@ -14,6 +14,7 @@ import (
 	_ "image/png"
 	"io"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"os/exec"
@@ -343,7 +344,7 @@ func serve_index_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
 }
 
 func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time) (
-	[]float64, []time.Time) {
+	[]float64, []time.Time, float64, float64) {
 
 	if time_start.After(time_end) {
 		panic(
@@ -368,6 +369,8 @@ func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time)
 	cur_dp_i := 0
 	ts_bin_left_sec := time_start_epoch
 	ts_bin_right_sec := time_start_epoch + delta_t_bin_sec
+	val_min := math.NaN()
+	val_max := math.NaN()
 	// Loop through each bin once and see how many timestamps we can fit in.
 	for cur_bin := int64(0); cur_bin < bins; cur_bin++ {
 		bin_value_sum := float64(0)
@@ -385,6 +388,17 @@ func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time)
 		}
 		// ... and then figure out the average value, and store it.
 		binned[cur_bin] = bin_value_sum / float64(datapoints_in_bin)
+
+		// Keep track of value min and max.
+		if (!math.IsNaN(val_min) && binned[cur_bin] < val_min) ||
+			(math.IsNaN(val_min) && datapoints_in_bin > 0) {
+			val_min = binned[cur_bin]
+		}
+		if (!math.IsNaN(val_max) && binned[cur_bin] > val_max) ||
+			(math.IsNaN(val_max) && datapoints_in_bin > 0) {
+			val_max = binned[cur_bin]
+		}
+
 		// Timestamp label is the average of bin left and right.
 		labels[cur_bin] = time.Unix((ts_bin_left_sec+ts_bin_right_sec)/2, 0)
 
@@ -392,7 +406,7 @@ func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time)
 		ts_bin_left_sec += delta_t_bin_sec
 		ts_bin_right_sec += delta_t_bin_sec
 	}
-	return binned, labels
+	return binned, labels, val_min, val_max
 }
 
 func graph_generate(db *sql.DB, metric string, time_start, time_end time.Time, w io.Writer) error {
@@ -425,10 +439,13 @@ SELECT timestamp, value FROM lilmon_metric_%s
 		dps = append(dps, datapoint{ts: ts, value: value})
 	}
 	log.Println("graph_generate: got ", len(dps), "datapoints.")
-	binned, labels := bin_datapoints(dps, DEFAULT_GRAPH_BINS, time_start, time_end)
+	binned, labels, val_min, val_max := bin_datapoints(
+		dps, DEFAULT_GRAPH_BINS, time_start, time_end)
 
 	_ = binned
 	_ = labels
+	_ = val_min
+	_ = val_max
 
 	g := image.NewRGBA(image.Rect(0, 0, DEFAULT_GRAPH_WIDTH, DEFAULT_GRAPH_HEIGHT))
 	draw.Draw(g, g.Bounds(), &image.Uniform{COLOR_BG}, image.ZP, draw.Src)

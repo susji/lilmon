@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+func almost_equals(a, b float64) bool {
+	return math.Abs(a-b) < 0.001
+}
+
 func TestBinDatapoints(t *testing.T) {
 	ta, _ := time.Parse(time.RFC3339, "2020-01-01T12:00:00Z")
 	tb, _ := time.Parse(time.RFC3339, "2020-01-01T13:00:00Z")
@@ -48,9 +52,19 @@ func TestBinDatapoints(t *testing.T) {
 	}
 	bins := 4
 
-	got_values, got_labels := bin_datapoints(dps, int64(bins), ta, tb)
+	got_values, got_labels, got_min, got_max := bin_datapoints(dps, int64(bins), ta, tb)
 	t.Log(got_values)
 	t.Log(got_labels)
+
+	want_min := 5.0
+	want_max := 100.0
+
+	if !almost_equals(got_min, want_min) {
+		t.Errorf("wrong min, wanted %f but got %f", want_min, got_min)
+	}
+	if !almost_equals(got_max, want_max) {
+		t.Errorf("wrong max, wanted %f but got %f", want_max, got_max)
+	}
 
 	if len(got_values) != bins {
 		t.Fatal("wrong number of value bins, got ", len(got_values))
