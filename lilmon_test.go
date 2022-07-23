@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"testing"
 	"time"
@@ -98,5 +99,41 @@ func TestBinDatapoints(t *testing.T) {
 				"want_labels[%d] does not match labels[%d]: %s != %s",
 				n, n, want_labels[n], got_labels[n])
 		}
+	}
+}
+
+func TestMetricNames(t *testing.T) {
+	valid_names := []string{
+		"some_metric_1",
+		"another_metric",
+		"good",
+		"yezzz-_1010101",
+		"verylooooooooooOOOOOOOOOOOOOOOOOOOOOOoooooooooong-name",
+		"mittari",
+		"1231903",
+	}
+	invalid_names := []string{
+		"'",
+		`"`,
+		" ",
+		"';delete from sqlite_master where type in ('view', 'table', 'index', 'trigger');",
+		"';DROP TABLE BOO;",
+		`<a href="badsite.example.com">click here now to win prize</a>`,
+		`<script>alert("AAAA")</script>`,
+	}
+
+	for n, valid_name := range valid_names {
+		t.Run(fmt.Sprintf("%d_%s", n, valid_name), func(t *testing.T) {
+			if !is_metric_name_valid(valid_name) {
+				t.Error("should be valid but is not: ", n, valid_name)
+			}
+		})
+	}
+	for n, invalid_name := range invalid_names {
+		t.Run(fmt.Sprintf("%d_%s", n, invalid_name), func(t *testing.T) {
+			if is_metric_name_valid(invalid_name) {
+				t.Error("should be invalid but is not: ", n, invalid_name)
+			}
+		})
 	}
 }
