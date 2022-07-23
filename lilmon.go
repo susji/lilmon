@@ -337,11 +337,13 @@ func serve_index_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
 			fmt.Fprintln(w)
 			fmt.Fprintln(w, "    </p>")
 		}
-		fmt.Fprintln(w, `
+		fmt.Fprintf(w, `
     <hr>
     <pre>lilmon</pre>
+    <pre>%s</pre>
   </body>
-</html>`)
+</html>
+`, time.Now().Format(time.RFC3339))
 	}
 }
 
