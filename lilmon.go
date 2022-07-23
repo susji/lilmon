@@ -50,17 +50,19 @@ const (
 )
 
 const (
-	DEFAULT_GRAPH_PERIOD     = 1 * time.Hour
-	DEFAULT_GRAPH_WIDTH      = 600
-	DEFAULT_GRAPH_HEIGHT     = 200
-	DEFAULT_GRAPH_PAD_WIDTH  = 70
-	DEFAULT_GRAPH_PAD_HEIGHT = 25
-	DEFAULT_GRAPH_BINS       = DEFAULT_GRAPH_WIDTH / 10
-	DEFAULT_LABEL_MAX_Y0     = 10
-	DEFAULT_LABEL_SHIFT_X    = DEFAULT_GRAPH_PAD_WIDTH * 3
-	DEFAULT_RETENTION_TIME   = 7 * 24 * time.Hour
-	DEFAULT_REFRESH_PERIOD   = 60
-	DEFAULT_PRUNE_PERIOD     = 15 * time.Minute
+	DEFAULT_GRAPH_PERIOD          = 1 * time.Hour
+	DEFAULT_GRAPH_WIDTH           = 600
+	DEFAULT_GRAPH_HEIGHT          = 200
+	DEFAULT_GRAPH_PAD_WIDTH_LEFT  = 10
+	DEFAULT_GRAPH_PAD_HEIGHT_UP   = 25
+	DEFAULT_GRAPH_PAD_WIDTH_RIGHT = 70
+	DEFAULT_GRAPH_PAD_HEIGHT_DOWN = 25
+	DEFAULT_GRAPH_BINS            = DEFAULT_GRAPH_WIDTH / 10
+	DEFAULT_LABEL_MAX_Y0          = 10
+	DEFAULT_LABEL_SHIFT_X         = DEFAULT_GRAPH_PAD_WIDTH_RIGHT * 2.5
+	DEFAULT_RETENTION_TIME        = 7 * 24 * time.Hour
+	DEFAULT_REFRESH_PERIOD        = 60
+	DEFAULT_PRUNE_PERIOD          = 15 * time.Minute
 )
 
 var (
@@ -425,10 +427,10 @@ func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time)
 }
 
 func graph_draw(values []float64, labels []time.Time, val_min, val_max float64) image.Image {
-	total_w := DEFAULT_GRAPH_WIDTH
-	total_h := DEFAULT_GRAPH_HEIGHT
-	pad_w := DEFAULT_GRAPH_PAD_WIDTH
-	pad_h := DEFAULT_GRAPH_PAD_HEIGHT
+	total_w := DEFAULT_GRAPH_WIDTH + DEFAULT_GRAPH_PAD_WIDTH_LEFT + DEFAULT_GRAPH_PAD_WIDTH_RIGHT
+	total_h := DEFAULT_GRAPH_HEIGHT + DEFAULT_GRAPH_PAD_HEIGHT_UP + DEFAULT_GRAPH_PAD_HEIGHT_DOWN
+	pad_w := DEFAULT_GRAPH_PAD_WIDTH_LEFT + DEFAULT_GRAPH_PAD_WIDTH_RIGHT
+	pad_h := DEFAULT_GRAPH_PAD_HEIGHT_UP + DEFAULT_GRAPH_PAD_HEIGHT_DOWN
 	w := total_w - pad_w
 	h := total_h - pad_h
 	bin_w := w / len(values)
@@ -436,11 +438,11 @@ func graph_draw(values []float64, labels []time.Time, val_min, val_max float64) 
 	draw.Draw(g, g.Bounds(), &image.Uniform{COLOR_BG}, image.Point{}, draw.Src)
 
 	marker_halfwidth := bin_w / 4
-	cur_x := bin_w / 2
+	cur_x := DEFAULT_GRAPH_PAD_WIDTH_LEFT + bin_w/2
 	for bin := 0; bin < len(values); bin++ {
 		// do Y calculations in zero reference, that is, normalize Y values as [0, 1].
 		norm_y := (values[bin] - val_min) / (val_max - val_min)
-		cur_y := math.Floor(float64(h) - float64(h)*norm_y)
+		cur_y := DEFAULT_GRAPH_PAD_HEIGHT_UP + math.Floor(float64(h)-float64(h)*norm_y)
 		marker := image.Rect(
 			cur_x-marker_halfwidth, int(cur_y)-marker_halfwidth,
 			cur_x+marker_halfwidth, int(cur_y)+marker_halfwidth)
@@ -450,8 +452,10 @@ func graph_draw(values []float64, labels []time.Time, val_min, val_max float64) 
 
 	label_max := strconv.FormatFloat(val_max, 'g', -1, 64)
 	label_min := strconv.FormatFloat(val_min, 'g', -1, 64)
-	graph_label(g, total_w-pad_w, DEFAULT_LABEL_MAX_Y0, label_max)
-	graph_label(g, total_w-pad_w, total_h-pad_h, label_min)
+	graph_label(g, total_w-DEFAULT_GRAPH_PAD_WIDTH_RIGHT,
+		DEFAULT_GRAPH_PAD_HEIGHT_UP+DEFAULT_LABEL_MAX_Y0, label_max)
+	graph_label(g, total_w-DEFAULT_GRAPH_PAD_WIDTH_RIGHT,
+		total_h-DEFAULT_GRAPH_PAD_HEIGHT_DOWN, label_min)
 
 	label_start := labels[0].Format(TIMESTAMP_FORMAT)
 	label_end := labels[len(labels)-1].Format(TIMESTAMP_FORMAT)
