@@ -52,6 +52,7 @@ const (
 	DEFAULT_GRAPH_WIDTH    = 400
 	DEFAULT_GRAPH_HEIGHT   = 200
 	DEFAULT_REFRESH_PERIOD = 60
+	DEFAULT_PRUNE_PERIOD   = 15 * time.Minute
 )
 
 var (
@@ -262,13 +263,12 @@ func validate_metrics(metrics []*metric) error {
 }
 
 func db_pruner(ctx context.Context, tasks chan<- db_task, metrics []*metric, retention_period time.Duration) {
-	PRUNE_PERIOD := 15 * time.Second
-	log.Println("Entering pruning loop with period of ", PRUNE_PERIOD)
+	log.Println("Entering pruning loop with period of ", DEFAULT_PRUNE_PERIOD)
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(PRUNE_PERIOD):
+		case <-time.After(DEFAULT_PRUNE_PERIOD):
 			for _, m := range metrics {
 				tasks <- db_task{
 					kind:                   DB_TASK_PRUNE_TABLE,
