@@ -22,6 +22,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	_ "github.com/glebarez/go-sqlite"
@@ -594,6 +595,13 @@ func metrics_get() []*metric {
 	return metrics
 }
 
+func make_sure_not_root() {
+	if syscall.Geteuid() == 0 && os.Getenv("LILMON_PERMIT_ROOT") != "live_dangerously" {
+		log.Println("This program will not run as root.")
+		os.Exit(20)
+	}
+}
+
 func main() {
 	var p_measure params_measure
 	var p_serve params_serve
@@ -616,9 +624,11 @@ func main() {
 	switch os.Args[1] {
 	case "measure":
 		cmd_measure.Parse(os.Args[2:])
+		make_sure_not_root()
 		measure(&p_measure)
 	case "serve":
 		cmd_serve.Parse(os.Args[2:])
+		make_sure_not_root()
 		serve(&p_serve)
 	case "help":
 		fmt.Println("The subcommands are:")

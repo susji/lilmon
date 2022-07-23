@@ -8,7 +8,7 @@ This is a little monitoring system.
 - [x] index tables with timestamps
 - [x] programmatically generate graphs
 - [x] implement simple `serve` subcommand to display a monitoring interface
-- [ ] warn about running as `root`
+- [x] make running as `root` harder
 - [ ] configure metrics with a file
 - [ ] draw graph legend
 - [ ] render HTML with proper templates
