@@ -11,56 +11,54 @@ import (
 	"time"
 )
 
+func exec_metric(ctx context.Context, m *metric, shell string, ord int, tasks chan<- db_task) {
+	cmd := exec.CommandContext(ctx, shell, "-c", m.command)
+	out, err := cmd.Output()
+	if err != nil {
+		log.Printf(
+			"{%d}... run failed: %v\n",
+			ord, err)
+		return
+	}
+	cleaned := strings.TrimSpace(string(out))
+	log.Printf(
+		"{%d}... run worked and returned: %q\n",
+		ord, cleaned)
+
+	val, err := strconv.ParseFloat(cleaned, 64)
+	if err != nil {
+		log.Printf(
+			"{%d}... but it's not floaty: %v\n",
+			ord, err)
+		return
+	}
+
+	tasks <- db_task{
+		kind: DB_TASK_INSERT,
+		insert_measurement: &measurement{
+			metric: m,
+			value:  val,
+		}}
+}
+
 func run_metrics(ctx context.Context, db *sql.DB, period time.Duration, shell string,
 	metrics []*metric, tasks chan<- db_task) {
 
 	log.Println("Entering measurement loop with period of ", period, "...")
-	_cur := 0
+	ord := 0
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-time.After(period):
-			for _n, _m := range metrics {
-				_cur++
-				cur := _cur
-				n := _n
-				m := _m
+			for n, m := range metrics {
+				ord++
 				sctx, cf := context.WithTimeout(ctx, period/2+1)
 				defer cf()
-				go func(sctx context.Context) {
-					log.Printf(
-						"{%d} Running command %d/%d: %q\n",
-						cur, n+1, len(metrics), m.command)
-					cmd := exec.CommandContext(sctx, shell, "-c", m.command)
-					out, err := cmd.Output()
-					if err != nil {
-						log.Printf(
-							"{%d}... run failed: %v\n",
-							cur, err)
-						return
-					}
-					cleaned := strings.TrimSpace(string(out))
-					log.Printf(
-						"{%d}... run worked and returned: %q\n",
-						cur, cleaned)
-
-					val, err := strconv.ParseFloat(cleaned, 64)
-					if err != nil {
-						log.Printf(
-							"{%d}... but it's not floaty: %v\n",
-							cur, err)
-						return
-					}
-
-					tasks <- db_task{
-						kind: DB_TASK_INSERT,
-						insert_measurement: &measurement{
-							metric: m,
-							value:  val,
-						}}
-
-				}(sctx)
+				log.Printf(
+					"{%d} Running command %d/%d: %q\n",
+					ord, n+1, n, m.command)
+				go exec_metric(sctx, m, shell, ord, tasks)
 			}
 		}
 	}
