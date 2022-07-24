@@ -12,7 +12,17 @@ import (
 )
 
 func make_sure_not_root() {
-	if syscall.Geteuid() == 0 && os.Getenv("LILMON_PERMIT_ROOT") != "live_dangerously" {
+	// This is fairly naive now, but better than nothing.
+	if syscall.Geteuid() != 0 {
+		return
+	}
+	if os.Getenv("LILMON_PERMIT_ROOT") == "live_dangerously" {
+		fmt.Println(
+			`NOTE: Instead of running lilmon as root, please consider
+executing your measurement scripts selectively with sudo, doas,
+or something similar. Please also note that you may want something
+something else to handle TLS termination for the server.`)
+	} else {
 		log.Println("This program will not run as root.")
 		os.Exit(20)
 	}
