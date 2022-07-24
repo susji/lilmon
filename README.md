@@ -13,29 +13,39 @@ metric and stores the results in a SQLite database. In the `serve` mode,
 
 Please note that `lilmon` executes the metrics commands as the user it is
 started as. It does not do any kind of privilege separation. If you start
-`lilmon measure` as `root`, your commands will be run as `root`. Similarly, if you start `lilmon serve` as a `root`, the browser interface will also be run as `root`.
+`lilmon measure` as `root`, your commands will be run as `root`. Similarly, if
+you start `lilmon serve` as a `root`, the browser interface will also be run as
+`root`.
 
 Neither modes need a privileged user to be run successfully. For the `measure`
 mode, you may want to employ `sudo` or `doas` to obtain privileged metrics.
+
+# Configuration
+
+See [the example file](lilmon.ini.example) for inspiration.
 
 # Usage
 
 These are the essential steps, which may also be automated.
 
-1. Create a configuration file in some secure location, for example
-   `/etc/lilmon.ini` with suitable filesystem flags.
-2. Determine a suitable location for the metrics database, for example
+1. Create a configuration file in some secure location. The default is
+   `/etc/lilmon.ini`. Make sure it is writable only by the intended, privileged
+   users.
+2. Determine a suitable location for the metrics database. The default is
    `/var/lilmon/lilmon.sqlite`. Again, do this with suitable filesystem
    permissions.
 3. Run the `measure` mode with
 ```
-$ lilmon measure -db-path "$DB_PATH" -config-path "$CONFIG_PATH"
+$ lilmon measure
 ```
 4. Run the `serve` mode with
 ```
-$ lilmon serve -db-path "$DB_PATH" -config-path "$CONFIG_PATH" -addr 127.0.0.1:15515
+$ lilmon serve
 ```
 5. Point your browser at `http://localhost:15515`
+
+If you wish use non-default parameters such as different location for the
+database file, please consult `lilmon measure -h` and `lilmon serve -h`.
 
 # Known limitations
 
@@ -55,4 +65,4 @@ $ lilmon serve -db-path "$DB_PATH" -config-path "$CONFIG_PATH" -addr 127.0.0.1:1
 - [x] draw min & max labels for graph axis
 - [ ] render HTML with proper templates
 - [ ] cache graphs
-- [ ] insert HTML for changing the graphed time range
+- [x] insert HTML for changing the graphed time range
