@@ -147,9 +147,6 @@ func TestMeasureMetric(t *testing.T) {
 			command:     `echo hello world!|wc -c`,
 		},
 	}
-	db := db_init(":memory:")
-	defer db.Close()
-	db_migrate(db, metrics)
 	// Just in case...
 	ctx, cf := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cf()
