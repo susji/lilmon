@@ -56,7 +56,7 @@ func serve_index_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
       <code>
         Show last
         <a href="/?time=last-1h">hour</a>
-        <a href="/?time=last-1h">3 hours</a>
+        <a href="/?time=last-3h">3 hours</a>
         <a href="/?time=last-12h">12 hours</a>
         <a href="/?time=last-24h">day</a>
         <a href="/?time=last-168h">week</a>
