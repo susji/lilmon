@@ -148,7 +148,7 @@ func TestMetricNames(t *testing.T) {
 }
 
 func TestDatabaseSmoke(t *testing.T) {
-	db := db_init(":memory")
+	db := db_init(":memory:")
 	defer db.Close()
 	db_migrate(db, test_metrics)
 }
