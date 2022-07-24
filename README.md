@@ -13,3 +13,4 @@ This is a little monitoring system.
 - [x] draw min & max labels for graph axis
 - [ ] render HTML with proper templates
 - [ ] cache graphs
+- [ ] insert HTML for changing the graphed time range
