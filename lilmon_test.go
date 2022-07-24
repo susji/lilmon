@@ -8,6 +8,14 @@ import (
 	"time"
 )
 
+var test_metrics = []*metric{
+	&metric{
+		name:        "test_metric_1",
+		description: "a simple test metric",
+		command:     `echo hello world!|wc -c`,
+	},
+}
+
 func almost_equals(a, b float64) bool {
 	return math.Abs(a-b) < 0.001
 }
@@ -139,19 +147,18 @@ func TestMetricNames(t *testing.T) {
 	}
 }
 
+func TestDatabaseSmoke(t *testing.T) {
+	db := db_init(":memory")
+	defer db.Close()
+	db_migrate(db, test_metrics)
+}
+
 func TestMeasureMetric(t *testing.T) {
-	metrics := []*metric{
-		&metric{
-			name:        "test_metric_1",
-			description: "a simple test metric",
-			command:     `echo hello world!|wc -c`,
-		},
-	}
 	// Just in case...
 	ctx, cf := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cf()
 	tc := make(chan db_task)
-	go exec_metric(ctx, metrics[0], "/bin/sh", 1, tc)
+	go exec_metric(ctx, test_metrics[0], "/bin/sh", 1, tc)
 	result := <-tc
 	t.Log(result.kind, result.insert_measurement.metric, result.insert_measurement.value)
 	if result.kind != DB_TASK_INSERT {
@@ -159,5 +166,52 @@ func TestMeasureMetric(t *testing.T) {
 	}
 	if !almost_equals(result.insert_measurement.value, float64(len("hello world!\n"))) {
 		t.Error("unexpected measurement value")
+	}
+}
+
+func TestParseMetricLine(t *testing.T) {
+	badlines := []string{
+		"asd|asd",
+		"",
+		"1",
+	}
+	for n, badline := range badlines {
+		t.Run(fmt.Sprintf("%d_%s", n+1, badline), func(t *testing.T) {
+			_, err := metrics_parse_line(badline)
+			if err == nil {
+				t.Error("should've failed but did not")
+			}
+		})
+	}
+
+	type goodentry struct {
+		line, want_name, want_desc, want_command string
+	}
+
+	goodentries := []goodentry{
+		goodentry{
+			line:         "something|description here|echo this is command|wc -c",
+			want_name:    "something",
+			want_desc:    "description here",
+			want_command: "echo this is command|wc -c",
+		},
+	}
+	for n, goodentry := range goodentries {
+		t.Run(fmt.Sprintf("%d_%s", n+1, goodentry.line), func(t *testing.T) {
+			m, err := metrics_parse_line(goodentry.line)
+			if err != nil {
+				t.Error("should've succeeded but did not:", err)
+			}
+			if m.name != goodentry.want_name {
+				t.Error("unexpected name, got ", m.name)
+			}
+			if m.description != goodentry.want_desc {
+				t.Error("unexpected desc, got ", m.description)
+			}
+			if m.command != goodentry.want_command {
+				t.Error("unexpected command, got ", m.command)
+			}
+		})
+
 	}
 }
