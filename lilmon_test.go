@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"testing"
@@ -135,5 +136,31 @@ func TestMetricNames(t *testing.T) {
 				t.Error("should be invalid but is not: ", n, invalid_name)
 			}
 		})
+	}
+}
+
+func TestMeasureMetric(t *testing.T) {
+	metrics := []*metric{
+		&metric{
+			name:        "test_metric_1",
+			description: "a simple test metric",
+			command:     `echo hello world!|wc -c`,
+		},
+	}
+	db := db_init(":memory:")
+	defer db.Close()
+	db_migrate(db, metrics)
+	// Just in case...
+	ctx, cf := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cf()
+	tc := make(chan db_task)
+	go exec_metric(ctx, metrics[0], "/bin/sh", 1, tc)
+	result := <-tc
+	t.Log(result.kind, result.insert_measurement.metric, result.insert_measurement.value)
+	if result.kind != DB_TASK_INSERT {
+		t.Error("wanted db insertion, got ", result.kind)
+	}
+	if !almost_equals(result.insert_measurement.value, float64(len("hello world!\n"))) {
+		t.Error("unexpected measurement value")
 	}
 }
