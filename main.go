@@ -40,11 +40,13 @@ func main() {
 
 	cmd_measure := flag.NewFlagSet("measure", flag.ExitOnError)
 	cmd_measure.StringVar(&p_measure.db_path, FLAG_DB_PATH, DEFAULT_DB_PATH, HELP_DB_PATH)
+	cmd_measure.StringVar(&p_measure.config_path, FLAG_CONFIG_PATH, DEFAULT_CONFIG_PATH, HELP_CONFIG_PATH)
 	cmd_measure.StringVar(&p_measure.shell, FLAG_SHELL, DEFAULT_SHELL, HELP_SHELL)
 	cmd_measure.DurationVar(&p_measure.period, FLAG_PERIOD, DEFAULT_PERIOD, HELP_PERIOD)
 
 	cmd_serve := flag.NewFlagSet("serve", flag.ExitOnError)
 	cmd_serve.StringVar(&p_serve.db_path, FLAG_DB_PATH, DEFAULT_DB_PATH, HELP_DB_PATH)
+	cmd_serve.StringVar(&p_serve.config_path, FLAG_CONFIG_PATH, DEFAULT_CONFIG_PATH, HELP_CONFIG_PATH)
 	cmd_serve.StringVar(&p_serve.addr, FLAG_ADDR, DEFAULT_ADDR, HELP_ADDR)
 
 	switch os.Args[1] {

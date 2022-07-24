@@ -127,7 +127,10 @@ func serve(p *params_serve) {
 			log.Println("warning: error when closing database: ", err)
 		}
 	}()
-	metrics := metrics_get()
+	metrics, err := metrics_load(p.config_path)
+	if err != nil {
+		log.Fatal("config file reading failed, cannot proceed with serve")
+	}
 	if err := db_migrate(db, metrics); err != nil {
 		log.Fatal("cannot proceed with serve: ", err)
 	}

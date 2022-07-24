@@ -18,7 +18,10 @@ func measure(p *params_measure) {
 		}
 	}()
 
-	metrics := metrics_get()
+	metrics, err := metrics_load(p.config_path)
+	if err != nil {
+		log.Fatal("config file reading failed, cannot proceed with measure")
+	}
 	if err := db_migrate(db, metrics); err != nil {
 		log.Fatal("cannot proceed with measure: ", err)
 	}
@@ -38,23 +41,4 @@ func measure(p *params_measure) {
 	go db_writer(ctx, db, ct)
 	go db_pruner(ctx, ct, metrics, DEFAULT_RETENTION_TIME)
 	run_metrics(ctx, db, time.Second*15, p.shell, metrics, ct)
-}
-
-func metrics_get() []*metric {
-	metrics := []*metric{
-		&metric{
-			name:        "n_temp_files",
-			description: "count of files under /tmp",
-			command:     "find /tmp/ -type f | wc -l",
-		},
-		&metric{
-			name:        "n_memory_pages_used",
-			description: "pages of memory in use",
-			command:     "vm_stat |fgrep 'Pages active:'|cut -d ':' -f 2|cut -d '.' -f1",
-		},
-	}
-	if err := validate_metrics(metrics); err != nil {
-		log.Fatal("cannot proceed with measure: ", err)
-	}
-	return metrics
 }

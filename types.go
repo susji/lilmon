@@ -2,14 +2,19 @@ package main
 
 import "time"
 
+type config_paths struct {
+	db_path, config_path string
+}
+
 type params_measure struct {
-	db_path, shell string
-	period         time.Duration
+	config_paths
+	shell  string
+	period time.Duration
 }
 
 type params_serve struct {
-	db_path string
-	addr    string
+	config_paths
+	addr string
 }
 
 type metric struct {

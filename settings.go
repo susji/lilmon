@@ -11,6 +11,10 @@ const (
 	DEFAULT_DB_PATH = "/tmp/lilmon.sqlite"
 	HELP_DB_PATH    = "Filepath to lilmon SQLite database"
 
+	FLAG_CONFIG_PATH    = "config-path"
+	DEFAULT_CONFIG_PATH = "/etc/lilmon.ini"
+	HELP_CONFIG_PATH    = "Filepath to lilmon configuration file"
+
 	FLAG_SHELL    = "shell"
 	DEFAULT_SHELL = "/bin/sh"
 	HELP_SHELL    = "Filepath for shell to use when measuring metrics"
@@ -38,6 +42,8 @@ const (
 	DEFAULT_RETENTION_TIME        = 7 * 24 * time.Hour
 	DEFAULT_REFRESH_PERIOD        = 60
 	DEFAULT_PRUNE_PERIOD          = 15 * time.Minute
+
+	CONFIG_DELIM = "|"
 )
 
 var (
