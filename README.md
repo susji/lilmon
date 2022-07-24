@@ -45,6 +45,7 @@ $ lilmon serve -db-path "$DB_PATH" -config-path "$CONFIG_PATH" -addr 127.0.0.1:1
 
 # TODO
 
+- [ ] support derivatives of metrics (like interface speed is a derivative of aggregate bytes)
 - [x] prune metric tables for data beyond retention time
 - [x] index tables with timestamps
 - [x] programmatically generate graphs
