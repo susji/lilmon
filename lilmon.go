@@ -438,8 +438,12 @@ func graph_draw(values []float64, labels []time.Time, val_min, val_max float64) 
 	draw.Draw(g, g.Bounds(), &image.Uniform{COLOR_BG}, image.Point{}, draw.Src)
 
 	marker_halfwidth := bin_w / 4
-	cur_x := DEFAULT_GRAPH_PAD_WIDTH_LEFT + bin_w/2
+	cur_x := DEFAULT_GRAPH_PAD_WIDTH_LEFT + bin_w/2 - bin_w
 	for bin := 0; bin < len(values); bin++ {
+		cur_x += bin_w
+		if math.IsNaN(values[bin]) {
+			continue
+		}
 		// do Y calculations in zero reference, that is, normalize Y values as [0, 1].
 		norm_y := (values[bin] - val_min) / (val_max - val_min)
 		cur_y := DEFAULT_GRAPH_PAD_HEIGHT_UP + math.Floor(float64(h)-float64(h)*norm_y)
@@ -447,7 +451,7 @@ func graph_draw(values []float64, labels []time.Time, val_min, val_max float64) 
 			cur_x-marker_halfwidth, int(cur_y)-marker_halfwidth,
 			cur_x+marker_halfwidth, int(cur_y)+marker_halfwidth)
 		draw.Draw(g, marker, &image.Uniform{COLOR_FG}, image.Point{}, draw.Src)
-		cur_x += bin_w
+
 	}
 
 	label_max := strconv.FormatFloat(val_max, 'g', -1, 64)
