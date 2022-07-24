@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -14,14 +15,21 @@ import (
 )
 
 var (
-	RE_TIMERANGE_LAST = regexp.MustCompile(`^last-([1-9][0-9]*)h$`)
+	RE_TIMERANGE_LAST = regexp.MustCompile(`^last-([0-9]+(\.[0-9]+)?)h$`)
 )
 
 func parse_timerange_expr(e string) (start time.Time, end time.Time, err error) {
 	e = strings.TrimSpace(e)
 	if m := RE_TIMERANGE_LAST.FindStringSubmatch(e); m != nil {
-		hours, _ := strconv.Atoi(m[1])
-		return time.Now().Add(-time.Hour * time.Duration(hours)), time.Now(), nil
+		frac_hours, _ := strconv.ParseFloat(m[1], 64)
+		if frac_hours == 0 {
+			return start, end, errors.New("hours is zero")
+		}
+		hours, minutes := math.Modf(frac_hours)
+		minutes = 100 * minutes * 60 / 100
+		return time.Now().Add(
+			-time.Hour*time.Duration(hours) -
+				time.Minute*time.Duration(minutes)), time.Now(), nil
 	}
 	return start, end, errors.New("invalid timerange expression")
 }
