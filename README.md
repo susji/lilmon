@@ -2,6 +2,12 @@
 
 This is a little monitoring system.
 
+# Known limitations
+
+- If a metric is disabled by removing it from the configuration file, its
+  historical data will not be automatically pruned after the retention period
+- The graphs are static and ugly
+
 # TODO
 
 - [x] prune metric tables for data beyond retention time
