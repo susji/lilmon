@@ -8,7 +8,7 @@ import (
 
 const (
 	FLAG_DB_PATH    = "db-path"
-	DEFAULT_DB_PATH = "/tmp/lilmon.sqlite"
+	DEFAULT_DB_PATH = "/var/lilmon/lilmon.sqlite"
 	HELP_DB_PATH    = "Filepath to lilmon SQLite database"
 
 	FLAG_CONFIG_PATH    = "config-path"
