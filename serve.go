@@ -3,21 +3,66 @@ package main
 import (
 	"bytes"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
+var (
+	RE_TIMERANGE_LAST = regexp.MustCompile(`^last-([1-9][0-9]*)h$`)
+)
+
+func parse_timerange_expr(e string) (start time.Time, end time.Time, err error) {
+	e = strings.TrimSpace(e)
+	if m := RE_TIMERANGE_LAST.FindStringSubmatch(e); m != nil {
+		hours, _ := strconv.Atoi(m[1])
+		return time.Now().Add(-time.Hour * time.Duration(hours)), time.Now(), nil
+	}
+	return start, end, errors.New("invalid timerange expression")
+}
+
 func serve_index_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
+		v := req.URL.Query()
+		timerange, ok := v["time"]
+
+		time_start := time.Now().Add(-DEFAULT_GRAPH_PERIOD)
+		time_end := time.Now()
+
+		if ok {
+			new_time_start, new_time_end, err := parse_timerange_expr(timerange[0])
+			if err != nil {
+				log.Println("serve_index: bad time: ", err)
+				w.WriteHeader(http.StatusBadRequest)
+				fmt.Fprintln(w, "bad time")
+				return
+			}
+			time_start = new_time_start
+			time_end = new_time_end
+		}
+
 		fmt.Fprintf(w, `
 <html>
   <head>
     <meta http-equiv="refresh" content="%d">
   </head>
   <body>
+    <div>
+      <code>
+        Show last
+        <a href="/?time=last-1h">hour</a>
+        <a href="/?time=last-1h">3 hours</a>
+        <a href="/?time=last-12h">12 hours</a>
+        <a href="/?time=last-24h">day</a>
+        <a href="/?time=last-168h">week</a>
+        <a href="/?time=last-720h">month</a>
+      </code>
+    </div>
 `, DEFAULT_REFRESH_PERIOD)
 		// XXXX Do proper html templating here
 		indent := `    `
@@ -30,9 +75,9 @@ func serve_index_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
 				m.description, "</pre>")
 			fmt.Fprintf(
 				w,
-				`%s<img src="/graph?metric=%s">`,
+				`%s<img src="/graph?metric=%s&time_start=%d&time_end=%d">`,
 				indent,
-				m.name)
+				m.name, time_start.Unix(), time_end.Unix())
 			fmt.Fprintln(w)
 			fmt.Fprintln(w, indent, "</div>")
 		}
