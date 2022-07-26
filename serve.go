@@ -3,55 +3,54 @@ package main
 import (
 	"bytes"
 	"database/sql"
-	"errors"
 	"fmt"
 	"log"
-	"math"
 	"net/http"
 	"regexp"
 	"strconv"
-	"strings"
 	"time"
 )
 
 var (
-	RE_TIMERANGE_LAST = regexp.MustCompile(`^last-([0-9]+(\.[0-9]+)?)h$`)
+	RE_TIME_RANGE_LAST = regexp.MustCompile(`^last-([0-9]+(\.[0-9]+)?)h$`)
 )
 
-func parse_timerange_expr(e string) (start time.Time, end time.Time, err error) {
-	e = strings.TrimSpace(e)
-	if m := RE_TIMERANGE_LAST.FindStringSubmatch(e); m != nil {
-		frac_hours, _ := strconv.ParseFloat(m[1], 64)
-		if frac_hours == 0 {
-			return start, end, errors.New("hours is zero")
-		}
-		hours, minutes := math.Modf(frac_hours)
-		minutes = 100 * minutes * 60 / 100
-		return time.Now().Add(
-			-time.Hour*time.Duration(hours) -
-				time.Minute*time.Duration(minutes)), time.Now(), nil
-	}
-	return start, end, errors.New("invalid timerange expression")
-}
-
-func serve_index_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
+func serve_index_gen(db *sql.DB, metrics []*metric, label string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		v := req.URL.Query()
-		timerange, ok := v["time"]
+		raw_time_starts, ok_start := v["time_start"]
+		raw_time_ends, ok_end := v["time_end"]
 
-		time_start := time.Now().Add(-DEFAULT_GRAPH_PERIOD)
-		time_end := time.Now()
+		var time_start, time_end time.Time
+		var err_start, err_end error
 
-		if ok {
-			new_time_start, new_time_end, err := parse_timerange_expr(timerange[0])
-			if err != nil {
-				log.Println("serve_index: bad time: ", err)
-				w.WriteHeader(http.StatusBadRequest)
-				fmt.Fprintln(w, "bad time")
-				return
+		if ok_start {
+			dur_start, err := time.ParseDuration(raw_time_starts[0])
+			if err == nil {
+				time_start = time.Now().Add(-dur_start)
+			} else {
+				err_start = err
 			}
-			time_start = new_time_start
-			time_end = new_time_end
+		} else {
+			time_start = time.Now().Add(-DEFAULT_GRAPH_PERIOD)
+		}
+		if ok_end {
+			dur_end, err := time.ParseDuration(raw_time_ends[0])
+			if err == nil {
+				time_end = time.Now().Add(-dur_end)
+			} else {
+				err_end = err
+			}
+		} else {
+			time_end = time.Now()
+		}
+		if err_start != nil || err_end != nil || time_start.After(time_end) {
+			log.Println(
+				label, ": bad time range:",
+				raw_time_starts, raw_time_ends, err_start, err_end)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintln(w, "bad time range")
+			return
 		}
 
 		fmt.Fprintf(w, `
@@ -63,12 +62,15 @@ func serve_index_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
     <div>
       <code>
         Show last
-        <a href="/?time=last-1h">hour</a>
-        <a href="/?time=last-3h">3 hours</a>
-        <a href="/?time=last-12h">12 hours</a>
-        <a href="/?time=last-24h">day</a>
-        <a href="/?time=last-168h">week</a>
-        <a href="/?time=last-720h">month</a>
+        <a href="/?time_start=30m">30 minutes</a>
+        <a href="/?time_start=1h">hour</a>
+        <a href="/?time_start=3h">3 hours</a>
+        <a href="/?time_start=6h">6 hours</a>
+        <a href="/?time_start=12h">12 hours</a>
+        <a href="/?time_start=24h">day</a>
+        <a href="/?time_start=72h">3 days</a>
+        <a href="/?time_start=168h">week</a>
+        <a href="/?time_start=720h">month</a>
       </code>
     </div>
 `, DEFAULT_REFRESH_PERIOD)
@@ -83,7 +85,7 @@ func serve_index_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
 				m.description, "</pre>")
 			fmt.Fprintf(
 				w,
-				`%s<img src="/graph?metric=%s&time_start=%d&time_end=%d">`,
+				`%s<img src="/graph?metric=%s&epoch_start=%d&epoch_end=%d">`,
 				indent,
 				m.name, time_start.Unix(), time_end.Unix())
 			fmt.Fprintln(w)
@@ -99,66 +101,54 @@ func serve_index_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
 	}
 }
 
-func serve_graph_gen(db *sql.DB, metrics []*metric) http.HandlerFunc {
+func serve_graph_gen(db *sql.DB, metrics []*metric, label string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		v := req.URL.Query()
-		metric, ok1 := v["metric"]
-		time_start_raw, ok2 := v["time_start"]
-		time_end_raw, ok3 := v["time_end"]
+		epoch_starts_raw, ok_start := v["epoch_start"]
+		epoch_ends_raw, ok_end := v["epoch_end"]
 
-		if !ok1 {
-			log.Println("serve_graph: metric name missing")
+		if !ok_start || !ok_end {
+			log.Println(
+				label, ": missing epoch start and/or end:",
+				epoch_starts_raw, epoch_ends_raw, ok_start, ok_end)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintln(w, "missing epoch start and/or end")
+			return
+		}
+
+		epoch_start, err_start := strconv.ParseInt(epoch_starts_raw[0], 10, 64)
+		epoch_end, err_end := strconv.ParseInt(epoch_ends_raw[0], 10, 64)
+
+		if err_start != nil || err_end != nil || epoch_start > epoch_end {
+			log.Println(label, ": bad epoch range", err_start, err_end)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintln(w, "bad epoch range")
+			return
+		}
+
+		metric, ok_metric := v["metric"]
+		if !ok_metric {
+			log.Println(label, ": metric name missing")
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintln(w, "missing metric name")
 			return
 		}
 		if !is_metric_name_valid(metric[0]) {
-			log.Println("serve_graph: metric name invalid: ", metric[0])
+			log.Println(label, ": metric name invalid: ", metric[0])
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintln(w, "bad metric name")
 			return
 		}
 
-		var time_start, time_end time.Time
-
-		if ok2 {
-			time_start_seconds, err := strconv.ParseInt(time_start_raw[0], 10, 64)
-			if err != nil {
-				log.Println("serve_graph: bad time_start: ", err)
-				w.WriteHeader(http.StatusBadRequest)
-				fmt.Fprintln(w, "bad time_start")
-				return
-			}
-			time_start = time.Unix(time_start_seconds, 0)
-		} else {
-			time_start = time.Now().Add(-DEFAULT_GRAPH_PERIOD)
-		}
-		if ok3 {
-			time_end_seconds, err := strconv.ParseInt(time_end_raw[0], 10, 64)
-			if err != nil {
-				log.Println("serve_graph: bad time_end: ", err)
-				w.WriteHeader(http.StatusBadRequest)
-				fmt.Fprintln(w, "bad time_end")
-				return
-			}
-			time_end = time.Unix(time_end_seconds, 0)
-		} else {
-			time_end = time.Now()
-		}
-		if time_start.After(time_end) {
-			log.Println("serve_graph: bad time range: ", time_start, time_end)
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "bad time range")
-			return
-		}
-
+		time_start := time.Unix(epoch_start, 0)
+		time_end := time.Unix(epoch_end, 0)
 		log.Printf(
-			"serve_graph: Drawing graph for %q [%s, %s]\n",
+			label+": Drawing graph for %q [%s, %s]\n",
 			metric[0], time_start, time_end)
 
 		b := bytes.Buffer{}
 		if err := graph_generate(db, metric[0], time_start, time_end, &b); err != nil {
-			log.Println("serve_graph: PNG encoding failed: ", err)
+			log.Println(label, ": PNG encoding failed: ", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintln(w, "graph generation failed")
 			return
@@ -188,8 +178,8 @@ func serve(p *params_serve) {
 		log.Fatal("cannot proceed with serve: ", err)
 	}
 
-	http.HandleFunc("/", serve_index_gen(db, metrics))
-	http.HandleFunc("/graph", serve_graph_gen(db, metrics))
+	http.HandleFunc("/", serve_index_gen(db, metrics, "index"))
+	http.HandleFunc("/graph", serve_graph_gen(db, metrics, "graph"))
 	log.Println("Listening at address ", p.addr)
 	http.ListenAndServe(p.addr, nil)
 }
