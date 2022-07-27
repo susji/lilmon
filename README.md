@@ -55,6 +55,12 @@ database file, please consult `lilmon measure -h` and `lilmon serve -h`.
 
 # TODO
 
+- [ ] render HTML with proper templates
+- [ ] cache graphs
+- [ ] slightly more responsive html
+- [ ] render a bit more guiding ticks for graphs
+- [ ] permit setting individual Y limits for graph rendering
+- [ ] make graph drawing things configurable after proper templating is done
 - [x] support derivatives of metrics (like interface speed is a derivative of aggregate bytes)
 - [x] prune metric tables for data beyond retention time
 - [x] index tables with timestamps
@@ -63,6 +69,4 @@ database file, please consult `lilmon measure -h` and `lilmon serve -h`.
 - [x] make running as `root` harder
 - [x] configure metrics with a file
 - [x] draw min & max labels for graph axis
-- [ ] render HTML with proper templates
-- [ ] cache graphs
 - [x] insert HTML for changing the graphed time range
