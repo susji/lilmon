@@ -14,7 +14,8 @@ type params_measure struct {
 
 type params_serve struct {
 	config_paths
-	addr string
+	template_path string
+	addr          string
 }
 
 type metric struct {

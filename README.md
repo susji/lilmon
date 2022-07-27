@@ -40,7 +40,7 @@ $ lilmon measure
 ```
 4. Run the `serve` mode with
 ```
-$ lilmon serve
+$ lilmon serve -template-path ./static/serve.template
 ```
 5. Point your browser at `http://localhost:15515`
 

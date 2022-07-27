@@ -26,6 +26,10 @@ const (
 	FLAG_ADDR    = "addr"
 	DEFAULT_ADDR = "localhost:15515"
 	HELP_ADDR    = "HTTP listening address"
+
+	FLAG_TEMPLATE_PATH    = "template-path"
+	DEFAULT_TEMPLATE_PATH = "/var/lilmon/serve.template"
+	HELP_TEMPLATE_PATH    = "Filepath to monitoring page's HTML template"
 )
 
 const (
@@ -47,11 +51,10 @@ const (
 )
 
 var (
-	COLOR_BG    = color.RGBA{230, 230, 230, 255}
-	COLOR_FG    = color.RGBA{255, 0, 0, 255}
-	COLOR_LABEL = color.RGBA{0, 0, 0, 255}
-	// 01/02 03:04:05PM '06 -0700
-	TIMESTAMP_FORMAT = "2006-01-02 03:04 MST"
+	COLOR_BG         = color.RGBA{230, 230, 230, 255}
+	COLOR_FG         = color.RGBA{255, 0, 0, 255}
+	COLOR_LABEL      = color.RGBA{0, 0, 0, 255}
+	TIMESTAMP_FORMAT = time.Stamp
 )
 
 var (

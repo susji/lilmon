@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"regexp"
@@ -15,7 +16,7 @@ var (
 	RE_TIME_RANGE_LAST = regexp.MustCompile(`^last-([0-9]+(\.[0-9]+)?)h$`)
 )
 
-func serve_index_gen(db *sql.DB, metrics []*metric, label string) http.HandlerFunc {
+func serve_index_gen(db *sql.DB, metrics []*metric, label string, template *template.Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		v := req.URL.Query()
 		raw_time_starts, ok_start := v["time_start"]
@@ -53,51 +54,34 @@ func serve_index_gen(db *sql.DB, metrics []*metric, label string) http.HandlerFu
 			return
 		}
 
-		fmt.Fprintf(w, `
-<html>
-  <head>
-    <meta http-equiv="refresh" content="%d">
-  </head>
-  <body>
-    <div>
-      <code>
-        Show last
-        <a href="/?time_start=30m">30 minutes</a>
-        <a href="/?time_start=1h">hour</a>
-        <a href="/?time_start=3h">3 hours</a>
-        <a href="/?time_start=6h">6 hours</a>
-        <a href="/?time_start=12h">12 hours</a>
-        <a href="/?time_start=24h">day</a>
-        <a href="/?time_start=72h">3 days</a>
-        <a href="/?time_start=168h">week</a>
-        <a href="/?time_start=720h">month</a>
-      </code>
-    </div>
-`, DEFAULT_REFRESH_PERIOD)
-		// XXXX Do proper html templating here
-		indent := `    `
-		for n, m := range metrics {
-			fmt.Fprintln(w, indent, "<div>")
-			fmt.Fprintln(
-				w,
-				indent, "<pre>", n, ": ",
-				m.name, ": ",
-				m.description, "</pre>")
-			fmt.Fprintf(
-				w,
-				`%s<img src="/graph?metric=%s&epoch_start=%d&epoch_end=%d">`,
-				indent,
-				m.name, time_start.Unix(), time_end.Unix())
-			fmt.Fprintln(w)
-			fmt.Fprintln(w, indent, "</div>")
+		type MetricData struct {
+			Name, Description string
 		}
-		fmt.Fprintf(w, `
-    <hr>
-    <pre>lilmon</pre>
-    <pre>%s (autorefresh @ %d sec)</pre>
-  </body>
-</html>
-`, time.Now().Format(TIMESTAMP_FORMAT), DEFAULT_REFRESH_PERIOD)
+		md := []MetricData{}
+		for _, m := range metrics {
+			md = append(md, MetricData{Name: m.name, Description: m.description})
+		}
+
+		template_data := struct {
+			Title                string
+			Metrics              []MetricData
+			TimeStart, TimeEnd   time.Time
+			EpochStart, EpochEnd int64
+			RefreshPeriod        int
+			TimeFormat           string
+			RenderTime           time.Time
+		}{
+			Title:         "lilmon",
+			RefreshPeriod: DEFAULT_REFRESH_PERIOD,
+			Metrics:       md,
+			EpochStart:    time_start.Unix(),
+			EpochEnd:      time_end.Unix(),
+			TimeStart:     time_start,
+			TimeEnd:       time_end,
+			TimeFormat:    TIMESTAMP_FORMAT,
+			RenderTime:    time.Now(),
+		}
+		template.Execute(w, template_data)
 	}
 }
 
@@ -163,6 +147,8 @@ func serve_graph_gen(db *sql.DB, metrics []*metric, label string) http.HandlerFu
 }
 
 func serve(p *params_serve) {
+	template := template.Must(template.ParseFiles(p.template_path))
+
 	db_path := fmt.Sprintf("%s?mode=ro", p.db_path)
 	log.Println("Opening SQLite DB at ", db_path)
 	db := db_init(db_path)
@@ -179,7 +165,7 @@ func serve(p *params_serve) {
 		log.Fatal("cannot proceed with serve: ", err)
 	}
 
-	http.HandleFunc("/", serve_index_gen(db, metrics, "index"))
+	http.HandleFunc("/", serve_index_gen(db, metrics, "index", template))
 	http.HandleFunc("/graph", serve_graph_gen(db, metrics, "graph"))
 	log.Println("Listening at address ", p.addr)
 	http.ListenAndServe(p.addr, nil)
