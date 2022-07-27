@@ -19,16 +19,18 @@
         <a href="/?time_start=720h">month</a>
       </code>
     </div>
-    <div>
-      {{ range $n, $m := .Metrics }}
+    {{ range $n, $m := .Metrics }}
+    <div style="float: left;">
       <pre>
         <b>{{ $n }}</b>, <u>{{ $m.Name }}</u>, <em>{{ $m.Description }}</em>
         <img src="/graph?metric={{ .Name }}&epoch_start={{ $.EpochStart }}&epoch_end={{ $.EpochEnd }}">
       </pre>
-      {{ end }}
     </div>
-    <hr>
-    <pre>lilmon</pre>
-    <pre>{{ .RenderTime.Format .TimeFormat }} (autorefresh @ {{ .RefreshPeriod }})</pre>
+    {{ end }}
+    <div style="clear: both;">
+      <hr>
+      <pre>lilmon</pre>
+      <pre>{{ .RenderTime.Format .TimeFormat }} (autorefresh @ {{ .RefreshPeriod }})</pre>
+    </div>
   </body>
 </html>
