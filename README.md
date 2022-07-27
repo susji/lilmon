@@ -55,7 +55,7 @@ database file, please consult `lilmon measure -h` and `lilmon serve -h`.
 
 # TODO
 
-- [ ] support derivatives of metrics (like interface speed is a derivative of aggregate bytes)
+- [x] support derivatives of metrics (like interface speed is a derivative of aggregate bytes)
 - [x] prune metric tables for data beyond retention time
 - [x] index tables with timestamps
 - [x] programmatically generate graphs
