@@ -1,5 +1,5 @@
 metric=n_temp_files|Files in /tmp|find /tmp/ -type f|wc -l
 metric=n_processes|Visible processes (all users)|ps -A|wc -l
 metric=n_logged_in_users|Logged-in users|who|wc -l
-metric="n_subshell_constant|Plain silly|{echo -n \"one\"; echo -n two; echo -n three}|wc -c"
+metric="n_subshell_constant|Plain silly|{ echo -n \"one\"; echo -n two; echo -n three; }|wc -c"
 
