@@ -88,17 +88,18 @@ func validate_metrics(metrics []*metric) error {
 }
 
 func metrics_parse_line(line string) (*metric, error) {
-	vals := strings.SplitN(line, CONFIG_DELIM, 3)
-	if len(vals) < 3 {
+	vals := strings.SplitN(line, CONFIG_DELIM, 4)
+	if len(vals) < 4 {
 		return nil, fmt.Errorf(
-			"line does not contain three %s-separated values, got %d",
+			"line does not contain four %s-separated values, got %d",
 			CONFIG_DELIM, len(vals))
 	}
 
 	m := &metric{
 		name:        vals[0],
 		description: vals[1],
-		command:     vals[2],
+		op:          vals[2],
+		command:     vals[3],
 	}
 
 	return m, nil
@@ -144,4 +145,13 @@ func metrics_load(filepath string) ([]*metric, error) {
 		return nil, errors.New("metrics parsing failed")
 	}
 	return metrics, nil
+}
+
+func metric_find(metrics []*metric, name string) *metric {
+	for _, cur := range metrics {
+		if cur.name == name {
+			return cur
+		}
+	}
+	return nil
 }

@@ -62,9 +62,20 @@ func TestBinDatapoints(t *testing.T) {
 	}
 	bins := 4
 
-	got_values, got_labels, got_min, got_max := bin_datapoints(dps, int64(bins), ta, tb)
-	t.Log(got_values)
-	t.Log(got_labels)
+	recorded_prev_vals := make([]float64, bins)
+	test_op_ident := func(i int, vals []float64, times []time.Time) float64 {
+		if i == 0 {
+			return vals[i]
+		}
+		recorded_prev_vals[i-1] = vals[i]
+		return vals[i]
+	}
+
+	got_values, got_labels, got_min, got_max := bin_datapoints(
+		dps, int64(bins), ta, tb, test_op_ident)
+	t.Log("got_values:        ", got_values)
+	t.Log("got_labels:        ", got_labels)
+	t.Log("recorded_prev_vals:", recorded_prev_vals)
 
 	want_min := 5.0
 	want_max := 100.0
@@ -102,7 +113,16 @@ func TestBinDatapoints(t *testing.T) {
 				"want_values[%d] does not match got_values[%d]: %f != %f",
 				n, n, want_values[n], got_values[n])
 		}
+		if n > 0 {
+			prev_want := want_values[n]
+			this_recorded := recorded_prev_vals[n-1]
+			if !math.IsNaN(prev_want) && prev_want != this_recorded {
+				t.Errorf(
+					"want_values[%d] != recorded_prev_vals[%d]: %f != %f",
+					n, n-1, prev_want, this_recorded)
 
+			}
+		}
 		if !want_labels[n].Equal(got_labels[n]) {
 			t.Errorf(
 				"want_labels[%d] does not match labels[%d]: %s != %s",
@@ -185,14 +205,15 @@ func TestParseMetricLine(t *testing.T) {
 	}
 
 	type goodentry struct {
-		line, want_name, want_desc, want_command string
+		line, want_name, want_desc, want_op, want_command string
 	}
 
 	goodentries := []goodentry{
 		goodentry{
-			line:         "something|description here|echo this is command|wc -c",
+			line:         "something|description here|average|echo this is command|wc -c",
 			want_name:    "something",
 			want_desc:    "description here",
+			want_op:      "average",
 			want_command: "echo this is command|wc -c",
 		},
 	}

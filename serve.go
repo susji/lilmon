@@ -126,15 +126,16 @@ func serve_graph_gen(db *sql.DB, metrics []*metric, label string) http.HandlerFu
 			return
 		}
 
-		metric, ok_metric := v["metric"]
+		metric_names, ok_metric := v["metric"]
 		if !ok_metric {
 			log.Println(label, ": metric name missing")
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintln(w, "missing metric name")
 			return
 		}
-		if !is_metric_name_valid(metric[0]) {
-			log.Println(label, ": metric name invalid: ", metric[0])
+		metric := metric_find(metrics, metric_names[0])
+		if !is_metric_name_valid(metric_names[0]) || metric == nil {
+			log.Println(label, ": metric name invalid: ", metric_names[0])
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintln(w, "bad metric name")
 			return
@@ -144,10 +145,10 @@ func serve_graph_gen(db *sql.DB, metrics []*metric, label string) http.HandlerFu
 		time_end := time.Unix(epoch_end, 0)
 		log.Printf(
 			label+": Drawing graph for %q [%s, %s]\n",
-			metric[0], time_start, time_end)
+			metric_names[0], time_start, time_end)
 
 		b := bytes.Buffer{}
-		if err := graph_generate(db, metric[0], time_start, time_end, &b); err != nil {
+		if err := graph_generate(db, metric, time_start, time_end, &b); err != nil {
 			log.Println(label, ": PNG encoding failed: ", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintln(w, "graph generation failed")

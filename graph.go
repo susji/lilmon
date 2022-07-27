@@ -17,7 +17,35 @@ import (
 	"golang.org/x/image/math/fixed"
 )
 
-func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time) (
+func op_identity(i int, vals []float64, _ []time.Time) float64 {
+	return vals[i]
+}
+
+func op_derivative(i int, vals []float64, times []time.Time) float64 {
+	if i == 0 {
+		return math.NaN()
+	}
+	// We go back as far as necessary to find a previous data point for the
+	// derivative.
+	previ := i - 1
+	for previ >= 0 && math.IsNaN(vals[previ]) {
+		previ--
+	}
+	if previ == -1 {
+		return math.NaN()
+	}
+
+	seconds_now := times[i].Unix()
+	seconds_prev := times[previ].Unix()
+	delta_t := seconds_now - seconds_prev
+	val_now := vals[i]
+	val_prev := vals[previ]
+	delta_v := val_now - val_prev
+	dv := delta_v / float64(delta_t)
+	return dv
+}
+
+func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time, op bin_op) (
 	[]float64, []time.Time, float64, float64) {
 
 	if time_start.After(time_end) {
@@ -28,6 +56,7 @@ func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time)
 	}
 	// We assume datapoints are sorted in ascending timestamp order.
 	binned := make([]float64, bins, bins)
+	result := make([]float64, bins, bins)
 	labels := make([]time.Time, bins, bins)
 	time_start_epoch := time_start.Unix()
 	time_end_epoch := time_end.Unix()
@@ -45,42 +74,49 @@ func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time)
 	ts_bin_right_sec := time_start_epoch + delta_t_bin_sec
 	val_min := math.NaN()
 	val_max := math.NaN()
-	// Loop through each bin once and see how many timestamps we can fit in.
+	// NaN through each bin once and see how many timestamps we can fit in.
 	for cur_bin := int64(0); cur_bin < bins; cur_bin++ {
-		bin_value_sum := float64(0)
-		datapoints_in_bin := 0
+		bin_value_sum_cur := float64(0)
+		n_datapoints_cur := 0
 		// First sum together datapoints belonging to this bin...
 		for cur_dp_i < len(dps) {
 			dp_sec := dps[cur_dp_i].ts.Unix()
 			if dp_sec >= ts_bin_left_sec && dp_sec <= ts_bin_right_sec {
-				bin_value_sum += dps[cur_dp_i].value
-				datapoints_in_bin++
+				bin_value_sum_cur += dps[cur_dp_i].value
+				n_datapoints_cur++
 				cur_dp_i++
 			} else {
 				break
 			}
 		}
-		// ... and then figure out the average value, and store it.
-		binned[cur_bin] = bin_value_sum / float64(datapoints_in_bin)
-
-		// Keep track of value min and max.
-		if (!math.IsNaN(val_min) && binned[cur_bin] < val_min) ||
-			(math.IsNaN(val_min) && datapoints_in_bin > 0) {
-			val_min = binned[cur_bin]
-		}
-		if (!math.IsNaN(val_max) && binned[cur_bin] > val_max) ||
-			(math.IsNaN(val_max) && datapoints_in_bin > 0) {
-			val_max = binned[cur_bin]
-		}
+		// ... and then do the requested operation - usually average of
+		// the current bin values.
+		binned[cur_bin] = bin_value_sum_cur / float64(n_datapoints_cur)
 
 		// Timestamp label is the average of bin left and right.
 		labels[cur_bin] = time.Unix((ts_bin_left_sec+ts_bin_right_sec)/2, 0)
+
+		// Do bin value transform before we interpret the value.
+		result[cur_bin] = op(
+			int(cur_bin),
+			binned,
+			labels)
+
+		// Keep track of value min and max.
+		if (!math.IsNaN(val_min) && result[cur_bin] < val_min) ||
+			(math.IsNaN(val_min) && n_datapoints_cur > 0) {
+			val_min = result[cur_bin]
+		}
+		if (!math.IsNaN(val_max) && result[cur_bin] > val_max) ||
+			(math.IsNaN(val_max) && n_datapoints_cur > 0) {
+			val_max = result[cur_bin]
+		}
 
 		// Slide bin timestamps over the next bin.
 		ts_bin_left_sec += delta_t_bin_sec
 		ts_bin_right_sec += delta_t_bin_sec
 	}
-	return binned, labels, val_min, val_max
+	return result, labels, val_min, val_max
 }
 
 func graph_draw(values []float64, labels []time.Time, val_min, val_max float64) image.Image {
@@ -111,8 +147,8 @@ func graph_draw(values []float64, labels []time.Time, val_min, val_max float64) 
 
 	}
 
-	label_max := strconv.FormatFloat(val_max, 'g', -1, 64)
-	label_min := strconv.FormatFloat(val_min, 'g', -1, 64)
+	label_max := strconv.FormatFloat(val_max, 'g', 6, 64)
+	label_min := strconv.FormatFloat(val_min, 'g', 6, 64)
 	graph_label(g, total_w-DEFAULT_GRAPH_PAD_WIDTH_RIGHT,
 		DEFAULT_GRAPH_PAD_HEIGHT_UP+DEFAULT_LABEL_MAX_Y0, label_max)
 	graph_label(g, total_w-DEFAULT_GRAPH_PAD_WIDTH_RIGHT,
@@ -138,14 +174,25 @@ func graph_label(img *image.RGBA, x, y int, label string) {
 	d.DrawString(label)
 }
 
-func graph_generate(db *sql.DB, metric string, time_start, time_end time.Time, w io.Writer) error {
-	dps, err := db_datapoints_get(db, metric, time_start, time_end)
+func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, w io.Writer) error {
+	dps, err := db_datapoints_get(db, metric.name, time_start, time_end)
 	if err != nil {
 		log.Println("graph_generate: error from DB get: ", err)
 		return err
 	}
+
+	var op bin_op
+	switch metric.op {
+	case "average":
+		op = op_identity
+	case "deriv":
+		op = op_derivative
+	default:
+		return fmt.Errorf("invalid metric op: %s", metric.op)
+	}
+
 	binned, labels, val_min, val_max := bin_datapoints(
-		dps, DEFAULT_GRAPH_BINS, time_start, time_end)
+		dps, DEFAULT_GRAPH_BINS, time_start, time_end, op)
 	g := graph_draw(binned, labels, val_min, val_max)
 	if err := png.Encode(w, g); err != nil {
 		return err

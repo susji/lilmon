@@ -18,7 +18,7 @@ type params_serve struct {
 }
 
 type metric struct {
-	name, description, command string
+	name, description, op, command string
 }
 
 type measurement struct {
@@ -30,6 +30,8 @@ type datapoint struct {
 	ts    time.Time
 	value float64
 }
+
+type bin_op func(i int, vals []float64, times []time.Time) float64
 
 const (
 	DB_TASK_PRUNE_TABLE = iota
