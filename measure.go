@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"time"
 )
 
 func measure(p *params_measure) {
@@ -40,5 +39,5 @@ func measure(p *params_measure) {
 	ct := make(chan db_task)
 	go db_writer(ctx, db, ct)
 	go db_pruner(ctx, ct, metrics, DEFAULT_RETENTION_TIME)
-	run_metrics(ctx, db, time.Second*15, p.shell, metrics, ct)
+	run_metrics(ctx, db, DEFAULT_MEASUREMENT_PERIOD, p.shell, metrics, ct)
 }

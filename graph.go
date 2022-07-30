@@ -195,8 +195,19 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 		return fmt.Errorf("invalid metric op: %s", metric.op)
 	}
 
+	// To have sensible graphs, the bin width (delta-t) should be
+	//   - equal or greater than our measurement period and
+	//   - smaller than the amount of horizontal pixels divided by some
+	//     small coefficient..
+
+	bins := int(time_end.Sub(time_start) / (DEFAULT_MEASUREMENT_PERIOD * 4))
+	max_bins := DEFAULT_GRAPH_WIDTH / 2
+	if bins > max_bins {
+		bins = max_bins
+	}
+
 	binned, labels, val_min, val_max := bin_datapoints(
-		dps, DEFAULT_GRAPH_BINS, time_start, time_end, op)
+		dps, int64(bins), time_start, time_end, op)
 	g := graph_draw(binned, labels, val_min, val_max)
 	if err := png.Encode(w, g); err != nil {
 		return err
