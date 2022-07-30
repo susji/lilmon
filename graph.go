@@ -153,9 +153,9 @@ func graph_draw(values []float64, labels []time.Time, val_min, val_max float64) 
 
 	label_max := strconv.FormatFloat(val_max, 'g', 6, 64)
 	label_min := strconv.FormatFloat(val_min, 'g', 6, 64)
-	graph_label(g, total_w-DEFAULT_GRAPH_PAD_WIDTH_RIGHT,
+	graph_label(g, total_w-DEFAULT_GRAPH_PAD_WIDTH_RIGHT*0.8,
 		DEFAULT_GRAPH_PAD_HEIGHT_UP+DEFAULT_LABEL_MAX_Y0, label_max)
-	graph_label(g, total_w-DEFAULT_GRAPH_PAD_WIDTH_RIGHT,
+	graph_label(g, total_w-DEFAULT_GRAPH_PAD_WIDTH_RIGHT*0.8,
 		total_h-DEFAULT_GRAPH_PAD_HEIGHT_DOWN, label_min)
 
 	label_start := labels[0].Format(TIMESTAMP_FORMAT)
