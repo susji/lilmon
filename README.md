@@ -94,7 +94,7 @@ database file, please consult `lilmon measure -h` and `lilmon serve -h`.
 - [ ] render a bit more guiding ticks for graphs
 - [ ] implement some logic to filter out outlier data points as a graph option for noisy data
 - [ ] support units for smart Y labels (eg. "bytes")
-- [ ] make graph parametes configurable with the file
+- [x] make graph parametes configurable with the file
 - [x] graph timestamp label based on range size
 - [x] permit setting individual Y limits for graph rendering
 - [x] make graph-binning relative to time range
