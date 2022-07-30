@@ -1,13 +1,19 @@
 # lilmon
 
-`lilmon` is a small, self-contained monitoring system. It has two modes of
-operation: `measure` and `serve`. `lilmon` handles different metrics. Each
-metric has a `name`, `description`, and `command`. The `command` is
-shell-expanded to obtain some kind of a real value.
+`lilmon` is a small self-contained program for collecting and displaying numeric
+values as time series graphs in a browser view.
 
-When operating in the `measure` mode, `lilmon` periodically measures each
-metric and stores the results in a SQLite database. In the `serve` mode,
-`lilmon` serves an ascetic browser interface page over HTTP.
+It has two modes of operation:
+1. `measure`
+2. `serve`
+
+In `measure` mode, `lilmon` records numeric for values for its configured
+metrics.
+
+In `serve` mode, `lilmon` displays dynamically rendered time series graphs for the configured metrics.
+
+Each metric has a `name`, `description`, graphing `options` `command`. The
+`command` is shell-expanded to obtain some kind of a numeric value.
 
 # Mode of operation
 
@@ -51,7 +57,6 @@ database file, please consult `lilmon measure -h` and `lilmon serve -h`.
 
 - If a metric is disabled by removing it from the configuration file, its
   historical data will not be automatically pruned after the retention period
-- The graphs are static and ugly
 
 # TODO
 
