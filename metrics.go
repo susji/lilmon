@@ -87,6 +87,25 @@ func validate_metrics(metrics []*metric) error {
 	return nil
 }
 
+func metrics_parse_options(options string) (graph_options, []error) {
+	ret := graph_options{}
+	errs := []error{}
+	for _, option := range strings.Split(strings.TrimSpace(options), ",") {
+		vals := strings.SplitN(option, "=", 2)
+		key := strings.TrimSpace(strings.ToLower(vals[0]))
+		if len(key) == 0 {
+			continue
+		}
+		switch key {
+		case "deriv":
+			ret.differentiate = true
+		default:
+			errs = append(errs, fmt.Errorf("unrecognized graph option: %s", key))
+		}
+	}
+	return ret, errs
+}
+
 func metrics_parse_line(line string) (*metric, error) {
 	vals := strings.SplitN(line, CONFIG_DELIM, 4)
 	if len(vals) < 4 {
@@ -94,11 +113,17 @@ func metrics_parse_line(line string) (*metric, error) {
 			"line does not contain four %s-separated values, got %d",
 			CONFIG_DELIM, len(vals))
 	}
+	options, errs := metrics_parse_options(vals[2])
+	if len(errs) > 0 {
+		return nil, fmt.Errorf(
+			"%s: invalid graph options: %v", vals[0], errs)
+
+	}
 
 	m := &metric{
 		name:        vals[0],
 		description: vals[1],
-		op:          vals[2],
+		options:     options,
 		command:     vals[3],
 	}
 

@@ -19,7 +19,12 @@ type params_serve struct {
 }
 
 type metric struct {
-	name, description, op, command string
+	name, description, command string
+	options                    graph_options
+}
+
+type graph_options struct {
+	differentiate bool
 }
 
 type measurement struct {

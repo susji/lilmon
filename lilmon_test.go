@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -210,7 +211,7 @@ func TestParseMetricLine(t *testing.T) {
 
 	goodentries := []goodentry{
 		goodentry{
-			line:         "something|description here|average|echo this is command|wc -c",
+			line:         "something|description here||echo this is command|wc -c",
 			want_name:    "something",
 			want_desc:    "description here",
 			want_op:      "average",
@@ -234,5 +235,35 @@ func TestParseMetricLine(t *testing.T) {
 			}
 		})
 
+	}
+}
+
+func TestParseOptions(t *testing.T) {
+	table := []struct {
+		give string
+		want graph_options
+	}{
+		{
+			give: "",
+			want: graph_options{differentiate: false},
+		},
+		{
+			give: "deriv",
+			want: graph_options{differentiate: true},
+		},
+	}
+
+	for n, entry := range table {
+		t.Run(fmt.Sprintf("%d_%s", n+1, entry.give), func(t *testing.T) {
+			got, errs := metrics_parse_options(entry.give)
+			if len(errs) > 0 {
+				t.Error("should not fail but: ", errs)
+			}
+			if !reflect.DeepEqual(got, entry.want) {
+				t.Errorf(
+					"wanted %#v, got %#v",
+					entry.want, got)
+			}
+		})
 	}
 }

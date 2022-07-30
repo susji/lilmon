@@ -185,16 +185,10 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 		return err
 	}
 
-	var op bin_op
-	switch metric.op {
-	case "average":
-		op = op_identity
-	case "deriv":
+	op := op_identity
+	if metric.options.differentiate {
 		op = op_derivative
-	default:
-		return fmt.Errorf("invalid metric op: %s", metric.op)
 	}
-
 	// To have sensible graphs, the bin width (delta-t) should be
 	//   - equal or greater than our measurement period and
 	//   - smaller than the amount of horizontal pixels divided by some
