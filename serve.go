@@ -167,10 +167,6 @@ func serve(p *params_serve) {
 		}
 	}()
 
-	if err := db_migrate(db, metrics); err != nil {
-		log.Fatal("cannot proceed with serve: ", err)
-	}
-
 	http.HandleFunc("/", serve_index_gen(db, metrics, "index", template))
 	http.HandleFunc("/graph", serve_graph_gen(db, metrics, "graph"))
 	log.Println("Listening at address ", p.addr)
