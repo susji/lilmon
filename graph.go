@@ -206,6 +206,12 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 		val_min--
 		val_max++
 	}
+	if metric.options.y_min != nil {
+		val_min = *metric.options.y_min
+	}
+	if metric.options.y_max != nil {
+		val_max = *metric.options.y_max
+	}
 	g := graph_draw(binned, labels, val_min, val_max)
 	if err := png.Encode(w, g); err != nil {
 		return err
