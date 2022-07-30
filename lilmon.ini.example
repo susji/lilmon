@@ -1,3 +1,21 @@
+[measure]
+retention_time=2160h   ; how old measurements are saved (~3 months)
+prune_db_period=30m    ; how often to purge old data from db
+measure_period=15s     ; how often metrics are measured
+
+[serve]
+default_period=1h
+graph_width=300
+graph_height=100
+graph_pad_left=10
+graph_pad_right=100
+graph_pad_up=25
+graph_pad_down=25
+graph_label_max_y0=10
+graph_label_shift_x=150
+
+autorefresh_period=30s
+
 [metrics]
 metric=n_temp_files|Files in /tmp|y_min=0|find /tmp/ -type f|wc -l
 metric=n_processes|Visible processes (all users)|y_min=0,y_max=1000|ps -A|wc -l
