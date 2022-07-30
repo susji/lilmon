@@ -25,8 +25,12 @@ func op_derivative(i int, vals []float64, times []time.Time) float64 {
 	if i == 0 {
 		return math.NaN()
 	}
+	// We implement the simple two-point forward difference approximation
+	// for the derivative.
+
 	// We go back as far as necessary to find a previous data point for the
-	// derivative.
+	// derivative. Error increases relative to the distance, but it's better
+	// than spitting out NaNs...
 	previ := i - 1
 	for previ >= 0 && math.IsNaN(vals[previ]) {
 		previ--
