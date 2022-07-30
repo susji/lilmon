@@ -17,9 +17,13 @@ func measure(p *params_measure) {
 		}
 	}()
 
-	metrics, err := metrics_load(p.config_path)
+	config, err := config_load(p.config_path)
 	if err != nil {
-		log.Fatal("config file reading failed, cannot proceed with measure")
+		log.Fatal(err)
+	}
+	metrics, err := config.config_parse_metrics()
+	if err != nil {
+		log.Fatal("config file reading failed, cannot proceed with measure: ", err)
 	}
 	if err := db_migrate(db, metrics); err != nil {
 		log.Fatal("cannot proceed with measure: ", err)

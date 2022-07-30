@@ -1,6 +1,14 @@
 package main
 
-import "time"
+import (
+	"time"
+
+	"github.com/susji/tinyini"
+)
+
+type config struct {
+	sections map[string]tinyini.Section
+}
 
 type config_paths struct {
 	db_path, config_path string

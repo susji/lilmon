@@ -1,3 +1,4 @@
+[metrics]
 metric=n_temp_files|Files in /tmp|y_min=0|find /tmp/ -type f|wc -l
 metric=n_processes|Visible processes (all users)|y_min=0,y_max=1000|ps -A|wc -l
 metric=rate_logged_in_users|Rate of user logins|deriv|who|wc -l

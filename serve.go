@@ -149,6 +149,15 @@ func serve_graph_gen(db *sql.DB, metrics []*metric, label string) http.HandlerFu
 func serve(p *params_serve) {
 	template := template.Must(template.ParseFiles(p.template_path))
 
+	config, err := config_load(p.config_path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	metrics, err := config.config_parse_metrics()
+	if err != nil {
+		log.Fatal("config file reading failed, cannot proceed with serve: ", err)
+	}
+
 	db_path := fmt.Sprintf("%s?mode=ro", p.db_path)
 	log.Println("Opening SQLite DB at ", db_path)
 	db := db_init(db_path)
@@ -157,10 +166,7 @@ func serve(p *params_serve) {
 			log.Println("warning: error when closing database: ", err)
 		}
 	}()
-	metrics, err := metrics_load(p.config_path)
-	if err != nil {
-		log.Fatal("config file reading failed, cannot proceed with serve")
-	}
+
 	if err := db_migrate(db, metrics); err != nil {
 		log.Fatal("cannot proceed with serve: ", err)
 	}

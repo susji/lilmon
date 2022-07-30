@@ -198,7 +198,7 @@ func TestParseMetricLine(t *testing.T) {
 	}
 	for n, badline := range badlines {
 		t.Run(fmt.Sprintf("%d_%s", n+1, badline), func(t *testing.T) {
-			_, err := metrics_parse_line(badline)
+			_, err := config_parse_metric_line(badline)
 			if err == nil {
 				t.Error("should've failed but did not")
 			}
@@ -220,7 +220,7 @@ func TestParseMetricLine(t *testing.T) {
 	}
 	for n, goodentry := range goodentries {
 		t.Run(fmt.Sprintf("%d_%s", n+1, goodentry.line), func(t *testing.T) {
-			m, err := metrics_parse_line(goodentry.line)
+			m, err := config_parse_metric_line(goodentry.line)
 			if err != nil {
 				t.Error("should've succeeded but did not:", err)
 			}
@@ -261,7 +261,7 @@ func TestParseOptions(t *testing.T) {
 
 	for n, entry := range table {
 		t.Run(fmt.Sprintf("%d_%s", n+1, entry.give), func(t *testing.T) {
-			got, errs := metrics_parse_options(entry.give)
+			got, errs := config_parse_metric_options(entry.give)
 			if len(errs) > 0 {
 				t.Error("should not fail but: ", errs)
 			}
