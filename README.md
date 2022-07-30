@@ -58,9 +58,10 @@ database file, please consult `lilmon measure -h` and `lilmon serve -h`.
 - [ ] cache graphs
 - [ ] slightly more responsive html
 - [ ] render a bit more guiding ticks for graphs
-- [ ] permit setting individual Y limits for graph rendering
 - [ ] make graph drawing things configurable after proper templating is done
 - [ ] implement some logic to filter out outlier data points
+- [ ] graph timestamp label based on range size
+- [x] permit setting individual Y limits for graph rendering
 - [x] make graph-binning relative to time range
 - [x] render HTML with proper templates
 - [x] support derivatives of metrics (like interface speed is a derivative of aggregate bytes)
