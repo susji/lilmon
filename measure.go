@@ -25,9 +25,16 @@ func measure(p *params_measure) {
 	if err != nil {
 		log.Fatal("config file reading failed, cannot proceed with measure: ", err)
 	}
+	mconfig, err := config.config_parse_measure()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	if err := db_migrate(db, metrics); err != nil {
 		log.Fatal("cannot proceed with measure: ", err)
 	}
+
+	log.Println("database retention period is ", mconfig.retention_time)
 
 	ctx, cf := context.WithCancel(context.Background())
 
@@ -42,6 +49,6 @@ func measure(p *params_measure) {
 
 	ct := make(chan db_task)
 	go db_writer(ctx, db, ct)
-	go db_pruner(ctx, ct, metrics, DEFAULT_RETENTION_TIME)
-	run_metrics(ctx, db, DEFAULT_MEASUREMENT_PERIOD, p.shell, metrics, ct)
+	go db_pruner(ctx, ct, metrics, mconfig.retention_time, mconfig.prune_db_period)
+	run_metrics(ctx, db, mconfig.measure_period, p.shell, metrics, ct)
 }

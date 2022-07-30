@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/susji/tinyini"
 )
@@ -119,4 +120,95 @@ func (c *config) config_parse_metrics() ([]*metric, error) {
 		return nil, errors.New("metrics parsing failed")
 	}
 	return metrics, nil
+}
+
+func (c *config) config_parse_measure() (*config_measure, error) {
+	ret := &config_measure{
+		retention_time:  DEFAULT_RETENTION_TIME,
+		prune_db_period: DEFAULT_PRUNE_PERIOD,
+		measure_period:  DEFAULT_MEASUREMENT_PERIOD,
+	}
+
+	in_err := false
+	for k, pairs := range c.sections["measure"] {
+		for _, pair := range pairs {
+			var err error
+			switch k {
+			case "retention_time":
+				ret.retention_time, err = time.ParseDuration(pair.Value)
+			case "prune_db_period":
+				ret.prune_db_period, err = time.ParseDuration(pair.Value)
+			case "measure_period":
+				ret.measure_period, err = time.ParseDuration(pair.Value)
+			}
+			if err != nil {
+				log.Printf("%s: invalid value: %v", k, err)
+				in_err = true
+			}
+		}
+	}
+	if in_err {
+		return nil, errors.New("parsing measure config failed")
+	}
+
+	return ret, nil
+}
+
+func (c *config) config_parse_serve() (*config_serve, error) {
+	ret := &config_serve{
+		width:  DEFAULT_GRAPH_WIDTH,
+		height: DEFAULT_GRAPH_HEIGHT,
+
+		pad_left:  DEFAULT_GRAPH_PAD_WIDTH_LEFT,
+		pad_right: DEFAULT_GRAPH_PAD_WIDTH_RIGHT,
+		pad_up:    DEFAULT_GRAPH_PAD_HEIGHT_UP,
+		pad_down:  DEFAULT_GRAPH_PAD_HEIGHT_DOWN,
+
+		label_max_y0:  DEFAULT_LABEL_MAX_Y0,
+		label_shift_x: DEFAULT_LABEL_SHIFT_X,
+
+		default_period:     DEFAULT_GRAPH_PERIOD,
+		autorefresh_period: DEFAULT_REFRESH_PERIOD,
+		bin_width:          DEFAULT_BIN_WIDTH,
+	}
+
+	in_err := false
+	for k, pairs := range c.sections["serve"] {
+		for _, pair := range pairs {
+			var err error
+			switch k {
+			case "graph_width":
+				ret.width, err = strconv.Atoi(pair.Value)
+			case "graph_height":
+				ret.height, err = strconv.Atoi(pair.Value)
+			case "graph_pad_left":
+				ret.pad_left, err = strconv.Atoi(pair.Value)
+			case "graph_pad_right":
+				ret.pad_right, err = strconv.Atoi(pair.Value)
+			case "graph_pad_up":
+				ret.pad_up, err = strconv.Atoi(pair.Value)
+			case "graph_pad_down":
+				ret.pad_down, err = strconv.Atoi(pair.Value)
+			case "graph_label_max_y0":
+				ret.label_max_y0, err = strconv.Atoi(pair.Value)
+			case "graph_label_shift_x":
+				ret.label_shift_x, err = strconv.Atoi(pair.Value)
+			case "default_period":
+				ret.default_period, err = time.ParseDuration(pair.Value)
+			case "autorefresh_period":
+				ret.autorefresh_period, err = time.ParseDuration(pair.Value)
+			case "bin_width":
+				ret.bin_width, err = time.ParseDuration(pair.Value)
+			}
+			if err != nil {
+				log.Printf("%s: invalid value: %v", k, err)
+				in_err = true
+			}
+		}
+	}
+	if in_err {
+		return nil, errors.New("parsing measure config failed")
+	}
+
+	return ret, nil
 }

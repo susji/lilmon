@@ -129,13 +129,15 @@ func db_writer(ctx context.Context, db *sql.DB, tasks <-chan db_task) {
 	}
 }
 
-func db_pruner(ctx context.Context, tasks chan<- db_task, metrics []*metric, retention_period time.Duration) {
-	log.Println("Entering pruning loop with period of ", DEFAULT_PRUNE_PERIOD)
+func db_pruner(ctx context.Context, tasks chan<- db_task, metrics []*metric,
+	retention_period, prune_period time.Duration) {
+
+	log.Println("Entering pruning loop with period of ", prune_period)
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(DEFAULT_PRUNE_PERIOD):
+		case <-time.After(prune_period):
 			for _, m := range metrics {
 				tasks <- db_task{
 					kind:                   DB_TASK_PRUNE_TABLE,

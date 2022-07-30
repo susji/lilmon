@@ -13,8 +13,8 @@ graph_pad_up=25
 graph_pad_down=25
 graph_label_max_y0=10
 graph_label_shift_x=150
-
-autorefresh_period=30s
+bin_width=1m           ; some small multiple of 'measure_period' is good
+autorefresh_period=60s
 
 [metrics]
 metric=n_temp_files|Files in /tmp|y_min=0|find /tmp/ -type f|wc -l

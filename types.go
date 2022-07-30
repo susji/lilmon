@@ -10,6 +10,17 @@ type config struct {
 	sections map[string]tinyini.Section
 }
 
+type config_serve struct {
+	width, height                                 int
+	pad_left, pad_right, pad_up, pad_down         int
+	label_max_y0, label_shift_x                   int
+	default_period, autorefresh_period, bin_width time.Duration
+}
+
+type config_measure struct {
+	retention_time, prune_db_period, measure_period time.Duration
+}
+
 type config_paths struct {
 	db_path, config_path string
 }

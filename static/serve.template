@@ -1,6 +1,6 @@
 <html>
   <head>
-    <meta http-equiv="refresh" content="{{ .RefreshPeriod }}">
+    <meta http-equiv="refresh" content="{{ .RefreshPeriod.Seconds }}">
     <title>{{ .Title }}</title>
   </head>
   <body>

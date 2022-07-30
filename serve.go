@@ -16,7 +16,9 @@ var (
 	RE_TIME_RANGE_LAST = regexp.MustCompile(`^last-([0-9]+(\.[0-9]+)?)h$`)
 )
 
-func serve_index_gen(db *sql.DB, metrics []*metric, label string, template *template.Template) http.HandlerFunc {
+func serve_index_gen(db *sql.DB, metrics []*metric, label string,
+	sconfig *config_serve, template *template.Template) http.HandlerFunc {
+
 	return func(w http.ResponseWriter, req *http.Request) {
 		v := req.URL.Query()
 		raw_time_starts, ok_start := v["time_start"]
@@ -33,7 +35,7 @@ func serve_index_gen(db *sql.DB, metrics []*metric, label string, template *temp
 				err_start = err
 			}
 		} else {
-			time_start = time.Now().Add(-DEFAULT_GRAPH_PERIOD)
+			time_start = time.Now().Add(-sconfig.default_period)
 		}
 		if ok_end {
 			dur_end, err := time.ParseDuration(raw_time_ends[0])
@@ -67,12 +69,12 @@ func serve_index_gen(db *sql.DB, metrics []*metric, label string, template *temp
 			Metrics              []MetricData
 			TimeStart, TimeEnd   time.Time
 			EpochStart, EpochEnd int64
-			RefreshPeriod        int
+			RefreshPeriod        time.Duration
 			TimeFormat           string
 			RenderTime           time.Time
 		}{
 			Title:         "lilmon",
-			RefreshPeriod: DEFAULT_REFRESH_PERIOD,
+			RefreshPeriod: sconfig.autorefresh_period,
 			Metrics:       md,
 			EpochStart:    time_start.Unix(),
 			EpochEnd:      time_end.Unix(),
@@ -85,7 +87,7 @@ func serve_index_gen(db *sql.DB, metrics []*metric, label string, template *temp
 	}
 }
 
-func serve_graph_gen(db *sql.DB, metrics []*metric, label string) http.HandlerFunc {
+func serve_graph_gen(db *sql.DB, metrics []*metric, label string, sconfig *config_serve) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		v := req.URL.Query()
 		epoch_starts_raw, ok_start := v["epoch_start"]
@@ -132,7 +134,7 @@ func serve_graph_gen(db *sql.DB, metrics []*metric, label string) http.HandlerFu
 			metric_names[0], time_start, time_end)
 
 		b := bytes.Buffer{}
-		if err := graph_generate(db, metric, time_start, time_end, &b); err != nil {
+		if err := graph_generate(db, metric, time_start, time_end, &b, sconfig); err != nil {
 			log.Println(label, ": PNG encoding failed: ", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintln(w, "graph generation failed")
@@ -157,6 +159,10 @@ func serve(p *params_serve) {
 	if err != nil {
 		log.Fatal("config file reading failed, cannot proceed with serve: ", err)
 	}
+	sconfig, err := config.config_parse_serve()
+	if err != nil {
+		log.Fatal("parsing serve config failed: ", err)
+	}
 
 	db_path := fmt.Sprintf("%s?mode=ro", p.db_path)
 	log.Println("Opening SQLite DB at ", db_path)
@@ -167,8 +173,8 @@ func serve(p *params_serve) {
 		}
 	}()
 
-	http.HandleFunc("/", serve_index_gen(db, metrics, "index", template))
-	http.HandleFunc("/graph", serve_graph_gen(db, metrics, "graph"))
+	http.HandleFunc("/", serve_index_gen(db, metrics, "index", sconfig, template))
+	http.HandleFunc("/graph", serve_graph_gen(db, metrics, "graph", sconfig))
 	log.Println("Listening at address ", p.addr)
 	http.ListenAndServe(p.addr, nil)
 }
