@@ -8,12 +8,14 @@ It has two modes of operation:
 2. `serve`
 
 In `measure` mode, `lilmon` records numeric for values for its configured
-metrics.
+metrics. It inserts these values into a SQLite database.
 
-In `serve` mode, `lilmon` displays dynamically rendered time series graphs for the configured metrics.
+In `serve` mode, `lilmon` displays dynamically rendered time series graphs for
+the configured metrics.
 
 Each metric has a `name`, `description`, graphing `options` `command`. The
 `command` is shell-expanded to obtain some kind of a numeric value.
+
 
 # Mode of operation
 
@@ -28,7 +30,23 @@ mode, you may want to employ `sudo` or `doas` to obtain privileged metrics.
 
 # Configuration
 
-See [the example file](lilmon.ini.example) for inspiration.
+See [the example file](lilmon.ini.example) for inspiration. Each definition of a
+`metric` consists of the following four fields:
+
+    <name>|<description>|<graph-options>|<raw-shell-command>
+
+The shell command may contain `|` characters -- it will not affect configuration
+parsing.
+
+`<graph-options>` may contain the following `,` separated parameters:
+
+  - `deriv`: The time series is numerically differentiated with respect to time
+  - `y_min=<float64>`: Graph's minimum Y value
+  - `y_max=<float64>`: Graph's maximum Y value
+
+`deriv` is useful if your metric is, for example, measuring transmitted or
+received bytes for a network interface. `deriv` will then display bytes/seconds
+instead.
 
 # Usage
 
@@ -65,6 +83,7 @@ database file, please consult `lilmon measure -h` and `lilmon serve -h`.
 - [ ] render a bit more guiding ticks for graphs
 - [ ] make graph drawing things configurable after proper templating is done
 - [ ] implement some logic to filter out outlier data points
+- [ ] support units for smart Y labels (eg. "bytes")
 - [x] graph timestamp label based on range size
 - [x] permit setting individual Y limits for graph rendering
 - [x] make graph-binning relative to time range
