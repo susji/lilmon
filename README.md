@@ -1,37 +1,47 @@
 # lilmon
 
-`lilmon` is a small self-contained program for collecting and displaying numeric
+lilmon is a small self-contained program for collecting and displaying numeric
 values as time series graphs in a browser view.
 
 It has two modes of operation:
-1. `measure`
-2. `serve`
+1. measure
+2. serve
 
-In `measure` mode, `lilmon` records numeric for values for its configured
+In the measure mode, lilmon records numeric for values for its configured
 metrics. It inserts these values into a SQLite database.
 
-In `serve` mode, `lilmon` displays dynamically rendered time series graphs for
+In the serve mode, lilmon displays dynamically rendered time series graphs for
 the configured metrics.
 
-Each metric has a `name`, `description`, graphing `options` `command`. The
-`command` is shell-expanded to obtain some kind of a numeric value.
+Each metric has a name, description, graphing options, and a command. Commands
+is shell-expanded like `$SHELL -c ${command}` and lilmon expects to receive a
+single number back.
 
+lilmon is not intended to be an alerting platform. It exists just to draw some
+simple graphs for UNIX-like environments.
 
 # Mode of operation
 
-Please note that `lilmon` executes the metrics commands as the user it is
-started as. It does not do any kind of privilege separation. If you start
-`lilmon measure` as `root`, your commands will be run as `root`. Similarly, if
-you start `lilmon serve` as a `root`, the browser interface will also be run as
-`root`.
+Please note that lilmon executes the metrics commands as the user it is started
+as. It does not do any kind of privilege separation. If you start `lilmon
+measure` as root, your commands will be run as root. Similarly, if you start
+`lilmon serve` as a root, the browser interface will also be run as root.
 
-Neither modes need a privileged user to be run successfully. For the `measure`
-mode, you may want to employ `sudo` or `doas` to obtain privileged metrics.
+It is not necessary to run either of the modes as a privileged user. For the
+measure mode, we suggest you to use `sudo`, `doas`, or something similar with
+limited capabilities to obtain privileged metrics.
+
+As an example, with `doas` you may permit the `_lilmon` user to run
+`/usr/bin/id` without any arguments as `root` like this:
+
+```doas
+permit nopass _lilmon as root cmd /usr/bin/id args
+```
 
 # Configuration
 
 See [the example file](lilmon.ini.example) for inspiration. Each definition of a
-`metric` consists of the following four fields:
+metric consists of the following four fields:
 
     <name>|<description>|<graph-options>|<raw-shell-command>
 
@@ -53,20 +63,21 @@ instead.
 These are the essential steps, which may also be automated.
 
 1. Create a configuration file in some secure location. The default is
-   `/etc/lilmon.ini`. Make sure it is writable only by the intended, privileged
-   users.
-2. Determine a suitable location for the metrics database. The default is
-   `/var/lilmon/lilmon.sqlite`. Again, do this with suitable filesystem
-   permissions.
-3. Run the `measure` mode with
+   `/etc/lilmon.ini`. Make sure it is writable **only** by the intended,
+   privileged users.
+2. Create a non-privileged daemon user and group such as `_lilmon:_lilmon`.
+3. Determine a suitable location for the metrics database. The default is
+   `/var/lilmon/lilmon.sqlite`. Make sure the directory exists. Again, do this
+   with suitable filesystem permissions.
+4. Run the `measure` mode as the `_lilmon` user with
 ```
 $ lilmon measure
 ```
-4. Run the `serve` mode with
+5. Run the `serve` mode as the `_lilmon` user with
 ```
 $ lilmon serve -template-path ./static/serve.template
 ```
-5. Point your browser at `http://localhost:15515`
+6. Point your browser at `http://localhost:15515`
 
 If you wish use non-default parameters such as different location for the
 database file, please consult `lilmon measure -h` and `lilmon serve -h`.
@@ -81,9 +92,9 @@ database file, please consult `lilmon measure -h` and `lilmon serve -h`.
 - [ ] cache graphs
 - [ ] slightly more responsive html
 - [ ] render a bit more guiding ticks for graphs
-- [ ] make graph drawing things configurable after proper templating is done
-- [ ] implement some logic to filter out outlier data points
+- [ ] implement some logic to filter out outlier data points as a graph option for noisy data
 - [ ] support units for smart Y labels (eg. "bytes")
+- [ ] make graph parametes configurable with the file
 - [x] graph timestamp label based on range size
 - [x] permit setting individual Y limits for graph rendering
 - [x] make graph-binning relative to time range
