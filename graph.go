@@ -123,7 +123,7 @@ func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time,
 	return result, labels, val_min, val_max
 }
 
-func graph_draw(values []float64, labels []time.Time, val_min, val_max float64) image.Image {
+func graph_draw(values []float64, labels []time.Time, time_format string, val_min, val_max float64) image.Image {
 	total_w := DEFAULT_GRAPH_WIDTH + DEFAULT_GRAPH_PAD_WIDTH_LEFT + DEFAULT_GRAPH_PAD_WIDTH_RIGHT
 	total_h := DEFAULT_GRAPH_HEIGHT + DEFAULT_GRAPH_PAD_HEIGHT_UP + DEFAULT_GRAPH_PAD_HEIGHT_DOWN
 	pad_w := DEFAULT_GRAPH_PAD_WIDTH_LEFT + DEFAULT_GRAPH_PAD_WIDTH_RIGHT
@@ -158,8 +158,8 @@ func graph_draw(values []float64, labels []time.Time, val_min, val_max float64) 
 	graph_label(g, total_w-DEFAULT_GRAPH_PAD_WIDTH_RIGHT*0.8,
 		total_h-DEFAULT_GRAPH_PAD_HEIGHT_DOWN, label_min)
 
-	label_start := labels[0].Format(TIMESTAMP_FORMAT)
-	label_end := labels[len(labels)-1].Format(TIMESTAMP_FORMAT)
+	label_start := labels[0].Format(time_format)
+	label_end := labels[len(labels)-1].Format(time_format)
 	graph_label(g, 0, total_h, label_start)
 	graph_label(g, total_w-DEFAULT_LABEL_SHIFT_X, total_h, label_end)
 
@@ -200,8 +200,10 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 		bins = max_bins
 	}
 
+	// Heavy lifting: obtain the binned data.
 	binned, labels, val_min, val_max := bin_datapoints(
 		dps, int64(bins), time_start, time_end, op)
+
 	if val_min == val_max {
 		val_min--
 		val_max++
@@ -212,7 +214,21 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 	if metric.options.y_max != nil {
 		val_max = *metric.options.y_max
 	}
-	g := graph_draw(binned, labels, val_min, val_max)
+
+	var tf string
+	dt := time_end.Sub(time_start)
+	if dt > time.Hour*24*365 {
+		tf = TIMESTAMP_FORMAT_YEAR
+	} else if dt > time.Hour*24*30 {
+		tf = TIMESTAMP_FORMAT_MONTH
+	} else if dt > time.Hour*24 {
+		tf = TIMESTAMP_FORMAT_DAY
+	} else if dt > time.Minute*15 {
+		tf = TIMESTAMP_FORMAT_HOUR
+	} else {
+		tf = TIMESTAMP_FORMAT_MINUTE
+	}
+	g := graph_draw(binned, labels, tf, val_min, val_max)
 	if err := png.Encode(w, g); err != nil {
 		return err
 	}

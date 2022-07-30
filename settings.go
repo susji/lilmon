@@ -50,10 +50,14 @@ const (
 )
 
 var (
-	COLOR_BG         = color.RGBA{230, 230, 230, 255}
-	COLOR_FG         = color.RGBA{255, 0, 0, 255}
-	COLOR_LABEL      = color.RGBA{0, 0, 0, 255}
-	TIMESTAMP_FORMAT = time.Stamp
+	COLOR_BG                = color.RGBA{230, 230, 230, 255}
+	COLOR_FG                = color.RGBA{255, 0, 0, 255}
+	COLOR_LABEL             = color.RGBA{0, 0, 0, 255}
+	TIMESTAMP_FORMAT_YEAR   = time.UnixDate
+	TIMESTAMP_FORMAT_MONTH  = "Jan _2"
+	TIMESTAMP_FORMAT_DAY    = time.Stamp
+	TIMESTAMP_FORMAT_HOUR   = "15:04"
+	TIMESTAMP_FORMAT_MINUTE = "15:04:05"
 )
 
 var (

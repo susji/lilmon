@@ -65,7 +65,7 @@ database file, please consult `lilmon measure -h` and `lilmon serve -h`.
 - [ ] render a bit more guiding ticks for graphs
 - [ ] make graph drawing things configurable after proper templating is done
 - [ ] implement some logic to filter out outlier data points
-- [ ] graph timestamp label based on range size
+- [x] graph timestamp label based on range size
 - [x] permit setting individual Y limits for graph rendering
 - [x] make graph-binning relative to time range
 - [x] render HTML with proper templates

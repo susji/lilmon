@@ -78,7 +78,7 @@ func serve_index_gen(db *sql.DB, metrics []*metric, label string, template *temp
 			EpochEnd:      time_end.Unix(),
 			TimeStart:     time_start,
 			TimeEnd:       time_end,
-			TimeFormat:    TIMESTAMP_FORMAT,
+			TimeFormat:    TIMESTAMP_FORMAT_YEAR,
 			RenderTime:    time.Now(),
 		}
 		template.Execute(w, template_data)
