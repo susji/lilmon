@@ -91,14 +91,33 @@ func metrics_parse_options(options string) (graph_options, []error) {
 	ret := graph_options{}
 	errs := []error{}
 	for _, option := range strings.Split(strings.TrimSpace(options), ",") {
-		vals := strings.SplitN(option, "=", 2)
-		key := strings.TrimSpace(strings.ToLower(vals[0]))
+		split := strings.SplitN(option, "=", 2)
+		key := strings.TrimSpace(strings.ToLower(split[0]))
+
 		if len(key) == 0 {
 			continue
 		}
+
+		var value string
+		if len(split) == 2 {
+			value = strings.TrimSpace(strings.ToLower(split[1]))
+		}
+
 		switch key {
 		case "deriv":
 			ret.differentiate = true
+		case "y_min":
+			val, err := strconv.ParseFloat(value, 64)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("bad y_min value: %w", err))
+			}
+			ret.y_min = &val
+		case "y_max":
+			val, err := strconv.ParseFloat(value, 64)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("bad y_max value: %w", err))
+			}
+			ret.y_max = &val
 		default:
 			errs = append(errs, fmt.Errorf("unrecognized graph option: %s", key))
 		}

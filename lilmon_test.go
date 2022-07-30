@@ -239,6 +239,8 @@ func TestParseMetricLine(t *testing.T) {
 }
 
 func TestParseOptions(t *testing.T) {
+	y_min := -10.0
+	y_max := 20.5
 	table := []struct {
 		give string
 		want graph_options
@@ -250,6 +252,10 @@ func TestParseOptions(t *testing.T) {
 		{
 			give: "deriv",
 			want: graph_options{differentiate: true},
+		},
+		{
+			give: "y_min=-10, y_max = 20.5 ",
+			want: graph_options{y_min: &y_min, y_max: &y_max},
 		},
 	}
 

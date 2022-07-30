@@ -25,6 +25,7 @@ type metric struct {
 
 type graph_options struct {
 	differentiate bool
+	y_min, y_max  *float64
 }
 
 type measurement struct {
