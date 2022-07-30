@@ -208,6 +208,10 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 
 	binned, labels, val_min, val_max := bin_datapoints(
 		dps, int64(bins), time_start, time_end, op)
+	if val_min == val_max {
+		val_min--
+		val_max++
+	}
 	g := graph_draw(binned, labels, val_min, val_max)
 	if err := png.Encode(w, g); err != nil {
 		return err
