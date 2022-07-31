@@ -39,6 +39,13 @@ a `float64` so integers are also fine. A minimalistic example of a metric
 command would then be `echo 123` which would result in a static value of `123`
 on each measurement.
 
+## How does it look like?
+
+The current version (v0.2.0) looks quite, uh, ascetic:
+
+![screenshot of lilmon
+UI](https://github.com/susji/lilmon/raw/main/lilmon.png "lilmon v0.2.0")
+
 ## Does lilmon do alerting?
 
 No. It's intended purpose is to record numeric values and display them with a
@@ -130,9 +137,9 @@ do not run lilmon as root or any other unnecessarily privileged user.
 # sudo -u lilmon /usr/local/bin/lilmon measure
 ```
 8. Begin serving the monitoring interface as the `lilmon` user. Please note that
-   `lilmon serve` by default only listens on `localhost:15515`:`
+   `lilmon serve` by default only listens on `localhost:15515`:
 ```
-# sudo -u lilmon /usr/local/bin/lilmon serve -addr "${LISTEN_ADDR}:15515""
+# sudo -u lilmon /usr/local/bin/lilmon serve -addr "${LISTEN_ADDR}:15515"
 ```
 9. Point your browser at `http://${LISTEN_ADDR}:15515`
 
@@ -149,3 +156,4 @@ do not run lilmon as root or any other unnecessarily privileged user.
 - [ ] render a bit more guiding ticks for graphs
 - [ ] implement some logic to filter out outlier data points as a graph option for noisy data
 - [ ] support units for smart Y labels (eg. "bytes")
+- [ ] make graph fonts configurable (at least size)
