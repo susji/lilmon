@@ -14,10 +14,14 @@ I needed a small monitoring tool for my own use.
 
 ## What does it do?
 
-lilmon has two modes of operation. In the first mode, `measure`, it executes
-commands for its metrics and gathers their numeric values into a SQLite
-database. In the second mode, `serve`, it displays the configured metrics as
-ascetic time series graphs as a browser interface.
+lilmon has two modes of operation.
+
+In the first mode, `measure`, it periodically executes commands for its metrics
+and gathers their numeric values into a SQLite database.
+
+In the second mode, `serve`, it displays the recorded values with a dynamic HTML
+page.
+
 
 ## What does lilmon measure?
 
@@ -48,9 +52,23 @@ UI](https://github.com/susji/lilmon/raw/main/lilmon.png "lilmon v0.2.0")
 
 ## Does lilmon do alerting?
 
-No. It's intended purpose is to record numeric values and display them with a
+No. Its intended purpose is to record numeric values and display them with a
 bare bones UI. However, as everything is recorded into a SQLite database, a
 different program can easily follow the metrics and do alerting based on that.
+
+## Will lilmon have a configuration UI?
+
+No.
+
+## The graphs look terrible!
+
+Yes. I'll probably make them less terrible in future.
+
+## Will lilmon support monitoring more than one machine?
+
+As all lilmon metrics are just columns in a SQLite table, they can be
+transferred outside their host of origin with relative ease. It's just not
+something I'm especially interested in.
 
 ## Warning
 
@@ -68,6 +86,12 @@ As an example, with `doas` you may permit the `lilmon` user to run
 
 ```doas
 permit nopass lilmon as root cmd /usr/bin/id args
+```
+
+Given above, you could then configure a metric like this:
+```
+[metrics]
+metric=n_id_chars|Characters output by privileged id|y_min=0|doas /usr/bin/id|wc -c
 ```
 
 ## How do you configure lilmon?
@@ -104,6 +128,10 @@ These manual steps should be roughly enough to run lilmon experimentally in
 whatever UNIX-like environment is supported by the Go toolchain. Below we assume
 GNU/Linux, so please note any differences for *BSD. As mentioned above, please
 do not run lilmon as root or any other unnecessarily privileged user.
+
+Below we assume that `root` is the privileged user and its primary group is
+`root`. It could be something else, too, like `wheel`. Please note that the `#`
+prefix in the example commands does mean a root shell according to the tradition.
 
 1. Obtain a `lilmon` executable -- possibly `go build` is enough, see Go's
    cross-compiling instructions if you need to target different OS/arch
@@ -143,13 +171,16 @@ do not run lilmon as root or any other unnecessarily privileged user.
 ```
 9. Point your browser at `http://${LISTEN_ADDR}:15515`
 
+## What about TLS, rate limiting, authentication...?
 
-# Known limitations
+I strongly recommend a reverse proxy for handling these things.
+
+## Known limitations
 
 - If a metric is disabled by removing it from the configuration file, its
   historical data will not be automatically pruned after the retention period
 
-# TODO
+## TODO
 
 - [ ] cache graphs
 - [ ] slightly more responsive html
