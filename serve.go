@@ -16,6 +16,23 @@ var (
 	RE_TIME_RANGE_LAST = regexp.MustCompile(`^last-([0-9]+(\.[0-9]+)?)h$`)
 )
 
+func determine_timestamp_format(time_start, time_end time.Time) string {
+	var tf string
+	dt := time_end.Sub(time_start)
+	if dt > time.Hour*24*365 {
+		tf = TIMESTAMP_FORMAT_YEAR
+	} else if dt > time.Hour*24*30 {
+		tf = TIMESTAMP_FORMAT_MONTH
+	} else if dt > time.Hour*24 {
+		tf = TIMESTAMP_FORMAT_DAY
+	} else if dt > time.Minute*15 {
+		tf = TIMESTAMP_FORMAT_HOUR
+	} else {
+		tf = TIMESTAMP_FORMAT_MINUTE
+	}
+	return tf
+}
+
 func serve_index_gen(db *sql.DB, metrics []*metric, label string,
 	sconfig *config_serve, template *template.Template) http.HandlerFunc {
 
@@ -80,7 +97,7 @@ func serve_index_gen(db *sql.DB, metrics []*metric, label string,
 			EpochEnd:      time_end.Unix(),
 			TimeStart:     time_start,
 			TimeEnd:       time_end,
-			TimeFormat:    TIMESTAMP_FORMAT_YEAR,
+			TimeFormat:    determine_timestamp_format(time_start, time_end),
 			RenderTime:    time.Now(),
 		}
 		template.Execute(w, template_data)

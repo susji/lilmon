@@ -216,19 +216,7 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 		val_max = *metric.options.y_max
 	}
 
-	var tf string
-	dt := time_end.Sub(time_start)
-	if dt > time.Hour*24*365 {
-		tf = TIMESTAMP_FORMAT_YEAR
-	} else if dt > time.Hour*24*30 {
-		tf = TIMESTAMP_FORMAT_MONTH
-	} else if dt > time.Hour*24 {
-		tf = TIMESTAMP_FORMAT_DAY
-	} else if dt > time.Minute*15 {
-		tf = TIMESTAMP_FORMAT_HOUR
-	} else {
-		tf = TIMESTAMP_FORMAT_MINUTE
-	}
+	tf := determine_timestamp_format(time_start, time_end)
 	g := graph_draw(binned, labels, tf, val_min, val_max, sconfig)
 	if err := png.Encode(w, g); err != nil {
 		return err
