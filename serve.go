@@ -144,6 +144,13 @@ func serve_graph_gen(db *sql.DB, metrics []*metric, label string, sconfig *confi
 			return
 		}
 
+		if epoch_start >= epoch_end {
+			log.Println(label, ": epoch_start >= epoch_end")
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintln(w, "epoch_start >= epoch_end")
+			return
+		}
+
 		time_start := time.Unix(epoch_start, 0)
 		time_end := time.Unix(epoch_end, 0)
 		log.Printf(

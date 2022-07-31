@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"image"
 	"image/draw"
@@ -200,6 +201,9 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 	max_bins := sconfig.width / 2
 	if bins > max_bins {
 		bins = max_bins
+	}
+	if bins == 0 {
+		return errors.New("cannot graph zero bins")
 	}
 	// Heavy lifting: obtain the binned data.
 	binned, labels, val_min, val_max := bin_datapoints(
