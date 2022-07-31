@@ -72,8 +72,8 @@ parsing.
   - `y_max=<float64>`: Graph's maximum Y value
 
 `deriv` is useful if your metric is, for example, measuring transmitted or
-received bytes for a network interface. `deriv** will then display bytes/seconds
-instead.
+received bytes for a network interface. By using `deriv`, the UI will then
+display transfer rates (bytes/second) instead of bytes.
 
 ## What is required to run lilmon?
 
@@ -120,7 +120,7 @@ privileged user.
 
     # sudo -u lilmon /usr/local/bin/lilmon serve -addr ${LISTEN_ADDR}:15515
 
-9. Point your browser at `http://target-host:15515`
+9. Point your browser at `http://${LISTEN_ADDR}:15515`
 
 
 # Known limitations
