@@ -4,7 +4,8 @@
 
 ## Changes
 
-* Implement more ggraceful handling of graph-drawing attempts without any bins
+* Implement more graceful handling of graph-drawing attempts without any bins
+* README is again better
 
 ## 0.2.0 (2022-07-31)
 
