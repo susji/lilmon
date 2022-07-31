@@ -19,10 +19,6 @@ const (
 	DEFAULT_SHELL = "/bin/sh"
 	HELP_SHELL    = "Filepath for shell to use when measuring metrics"
 
-	FLAG_PERIOD    = "period"
-	DEFAULT_PERIOD = 20 * time.Second
-	HELP_PERIOD    = "How often to take new measurements"
-
 	FLAG_ADDR    = "addr"
 	DEFAULT_ADDR = "localhost:15515"
 	HELP_ADDR    = "HTTP listening address"
