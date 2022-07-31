@@ -6,7 +6,6 @@
   <body>
     <div>
       <code>
-        [{{ .TimeStart.Format .TimeFormat }}, {{ .TimeEnd.Format .TimeFormat  }} ]
         <a href="/?time_start=5m">5 minutes</a>
         <a href="/?time_start=30m">30 minutes</a>
         <a href="/?time_start=1h">hour</a>
@@ -14,10 +13,15 @@
         <a href="/?time_start=6h">6 hours</a>
         <a href="/?time_start=12h">12 hours</a>
         <a href="/?time_start=24h">day</a>
+        <a href="/?time_start=48h&time_end=24h">day before</a>
         <a href="/?time_start=72h">3 days</a>
         <a href="/?time_start=168h">week</a>
+        <a href="/?time_start=336h&time_end=168h">week before</a>
         <a href="/?time_start=720h">month</a>
       </code>
+    </div>
+    <div>
+      [{{ .TimeStart.Format .TimeFormat }}, {{ .TimeEnd.Format .TimeFormat  }} ]
     </div>
     {{ range $n, $m := .Metrics }}
     <div style="float: left;">
