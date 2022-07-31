@@ -2,6 +2,10 @@
 
 ## next release (YYYY-MM-DD)
 
+## Changes
+
+* Implement more ggraceful handling of graph-drawing attempts without any bins
+
 ## 0.2.0 (2022-07-31)
 
 ### Changes
