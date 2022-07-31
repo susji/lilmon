@@ -28,7 +28,7 @@ const (
 	HELP_ADDR    = "HTTP listening address"
 
 	FLAG_TEMPLATE_PATH    = "template-path"
-	DEFAULT_TEMPLATE_PATH = "/var/lilmon/serve.template"
+	DEFAULT_TEMPLATE_PATH = "/etc/lilmon.template"
 	HELP_TEMPLATE_PATH    = "Filepath to monitoring page's HTML template"
 )
 
