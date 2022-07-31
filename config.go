@@ -96,28 +96,36 @@ func config_parse_metric_line(line string) (*metric, error) {
 
 func (c *config) config_parse_metrics() ([]*metric, error) {
 	metrics := []*metric{}
-
-	pairs, ok := c.sections["metrics"]["metric"]
-	if !ok {
-		return nil, errors.New("no metrics defined in configuration file")
-	}
-
-	parse_in_err := false
-	for _, pair := range pairs {
-		metric, err := config_parse_metric_line(pair.Value)
-		if err != nil {
-			log.Printf("%d: parsing metric line failed: %v\n", pair.Lineno, err)
-			parse_in_err = true
-			continue
+	in_err := false
+	for k, pairs := range c.sections["metrics"] {
+		for _, pair := range pairs {
+			switch k {
+			case "metric":
+				metric, err := config_parse_metric_line(pair.Value)
+				if err != nil {
+					log.Printf(
+						"%d: parsing metric line failed: %v\n",
+						pair.Lineno, err)
+					in_err = true
+					continue
+				}
+				metrics = append(metrics, metric)
+			default:
+				log.Printf(
+					"metrics section supports only 'metric' definitions "+
+						"but line %d has something else.", pair.Lineno)
+				in_err = true
+			}
 		}
-		metrics = append(metrics, metric)
+
 	}
+
 	if err := validate_metrics(metrics); err != nil {
 		log.Println("metrics validation failed: ", err)
 		return nil, err
 	}
-	if parse_in_err {
-		return nil, errors.New("metrics parsing failed")
+	if in_err {
+		return nil, errors.New("metrics section contained errors")
 	}
 	return metrics, nil
 }
@@ -140,6 +148,10 @@ func (c *config) config_parse_measure() (*config_measure, error) {
 				ret.prune_db_period, err = time.ParseDuration(pair.Value)
 			case "measure_period":
 				ret.measure_period, err = time.ParseDuration(pair.Value)
+			default:
+				err = fmt.Errorf(
+					"%d: unrecognized config item: %s",
+					pair.Lineno, k)
 			}
 			if err != nil {
 				log.Printf("%s: invalid value: %v", k, err)
@@ -199,6 +211,10 @@ func (c *config) config_parse_serve() (*config_serve, error) {
 				ret.autorefresh_period, err = time.ParseDuration(pair.Value)
 			case "bin_width":
 				ret.bin_width, err = time.ParseDuration(pair.Value)
+			default:
+				err = fmt.Errorf(
+					"%d: unrecognized config item: %s",
+					pair.Lineno, k)
 			}
 			if err != nil {
 				log.Printf("%s: invalid value: %v", k, err)
