@@ -2,14 +2,16 @@ module github.com/susji/lilmon
 
 go 1.18
 
-require github.com/glebarez/go-sqlite v1.17.3
+require (
+	github.com/glebarez/go-sqlite v1.17.3
+	github.com/susji/tinyini v0.5.0
+	golang.org/x/image v0.0.0-20220722155232-062f8c9fd539
+)
 
 require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
-	github.com/susji/tinyini v0.5.0 // indirect
-	golang.org/x/image v0.0.0-20220722155232-062f8c9fd539 // indirect
 	golang.org/x/sys v0.0.0-20220405052023-b1e9470b6e64 // indirect
 	modernc.org/libc v1.16.8 // indirect
 	modernc.org/mathutil v1.4.1 // indirect
