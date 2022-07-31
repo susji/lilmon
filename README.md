@@ -137,18 +137,18 @@ prefix in the example commands does mean a root shell according to the tradition
    cross-compiling instructions if you need to target different OS/arch
 2. Install the binary on your target machine:
 ```
-# install lilmon /usr/local/bin/lilmon
+# install -m 0755 -o root -g root lilmon /usr/local/bin
 ```
 3. Create `/etc/lilmon.ini` -- use [the example file](lilmon.ini.example) as
    basis and make sure it is writable only by privileged users. Probably this
    means it should be owned by `root:root` or something similar.
 ```
-# install -m 0644 -o root -g root lilmon.ini.example /etc/lilmon.ini
+# install -T -m 0644 -o root -g root lilmon.ini.example /etc/lilmon.ini
 ```
 
 4. Copy the browser UI's HTML template to lilmon's directory:
 ```
-# install -m 0644 -o root -g root lilmon.template.example /etc/lilmon.template
+# install -T -m 0644 -o root -g root lilmon.template.example /etc/lilmon.template
 ```
 5. Create a new non-privileged system user and group for lilmon:
 ```
