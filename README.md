@@ -21,8 +21,16 @@ ascetic time series graphs as a browser interface.
 
 ## What does lilmon measure?
 
-lilmon is given a set of *metrics*. Each metric has a name, description,
-graphing options, and a command. Commands are shell-expanded like
+lilmon measures numbers. To do this, lilmon is given a set of *metrics*. Each
+metric has a
+
+- name
+- description
+- graphing options
+- command.
+
+lilmon uses raw shell-commands to obtain these numeric values for each specified
+metric. Commands are shell-expanded like
 
     $ /bin/sh -c '<metric-command>'
 
@@ -75,51 +83,57 @@ parsing.
 received bytes for a network interface. By using `deriv`, the UI will then
 display transfer rates (bytes/second) instead of bytes.
 
+## Can you edit the browser UI?
+
+Yes, just use [the example as basis](lilmon.template.example) and have at it.
+
 ## What is required to run lilmon?
 
 **NOTE**: lilmon is currently very experimental software and it is not packaged
 in any manner. Your usage experience will be mildly tedious. I will fix this in
 near future.
 
-These manual steps should be roughly enough to run lilmon experimentally. As
-mentioned above, please do not run lilmon as root or any other unnecessarily
-privileged user.
+These manual steps should be roughly enough to run lilmon experimentally in
+whatever UNIX-like environment is supported by the Go toolchain. Below we assume
+GNU/Linux, so please note any differences for *BSD. As mentioned above, please
+do not run lilmon as root or any other unnecessarily privileged user.
 
 1. Obtain a `lilmon` executable -- possibly `go build` is enough, see Go's
    cross-compiling instructions if you need to target different OS/arch
 2. Install the binary on your target machine:
-
-    # install lilmon /usr/local/bin/lilmon
-
+```
+# install lilmon /usr/local/bin/lilmon
+```
 3. Create `/etc/lilmon.ini` -- use [the example file](lilmon.ini.example) as
    basis and make sure it is writable only by privileged users. Probably this
    means it should be owned by `root:root` or something similar.
-
-    # install -m 0644 -o root -g root lilmon.ini.example /etc/lilmon.ini
+```
+# install -m 0644 -o root -g root lilmon.ini.example /etc/lilmon.ini
+```
 
 4. Copy the browser UI's HTML template to lilmon's directory:
-
-    # install -m 0644 -o root -g root lilmon.template.example /etc/lilmon.template
-
+```
+# install -m 0644 -o root -g root lilmon.template.example /etc/lilmon.template
+```
 5. Create a new non-privileged system user and group for lilmon:
-
-    # adduser --disabled-login --system --no-create-home --group lilmon
-
+```
+# adduser --disabled-login --system --no-create-home --group lilmon
+```
 6. Create a directory suitable for storing the lilmon database and HTML
-   template:
-
-    # mkdir /var/lilmon
-    # chown lilmon:lilmon /var/lilmon
-
+   Otemplate:
+```
+# mkdir /var/lilmon
+# chown lilmon:lilmon /var/lilmon
+```
 7. Begin measuring as the `lilmon` user:
-
-    # sudo -u lilmon /usr/local/bin/lilmon measure
-
+```
+# sudo -u lilmon /usr/local/bin/lilmon measure
+```
 8. Begin serving the monitoring interface as the `lilmon` user. Please note that
    `lilmon serve` by default only listens on `localhost:15515`:`
-
-    # sudo -u lilmon /usr/local/bin/lilmon serve -addr ${LISTEN_ADDR}:15515
-
+```
+# sudo -u lilmon /usr/local/bin/lilmon serve -addr "${LISTEN_ADDR}:15515""
+```
 9. Point your browser at `http://${LISTEN_ADDR}:15515`
 
 
