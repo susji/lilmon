@@ -146,7 +146,7 @@ prefix in the example commands does mean a root shell according to the tradition
 # install -T -m 0644 -o root -g root lilmon.ini.example /etc/lilmon.ini
 ```
 
-4. Copy the browser UI's HTML template to lilmon's directory:
+4. Copy the browser UI's HTML template to a privileged directory:
 ```
 # install -T -m 0644 -o root -g root lilmon.template.example /etc/lilmon.template
 ```
@@ -154,8 +154,7 @@ prefix in the example commands does mean a root shell according to the tradition
 ```
 # adduser --disabled-login --system --no-create-home --group lilmon
 ```
-6. Create a directory suitable for storing the lilmon database and HTML
-   Otemplate:
+6. Create a directory suitable for storing the lilmon database:
 ```
 # mkdir /var/lilmon
 # chown lilmon:lilmon /var/lilmon
