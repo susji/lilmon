@@ -58,5 +58,5 @@ var (
 )
 
 var (
-	RE_NAME = regexp.MustCompile("^[-_a-zA-Z0-9]{1,512}$")
+	RE_NAME = regexp.MustCompile("^[_a-zA-Z0-9]{1,512}$")
 )
