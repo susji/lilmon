@@ -1,16 +1,25 @@
 # Changelog
 
-## next version (YYYY-MM-DD)
+## 0.4.1 (2022-08-06)
+
+### Fixes
+
+* Disallow `-` in metric names as those will not work with our approach to
+  SQLite queries
+
+### Changes
+
+* Bump `modernc.org/sqlite` to v1.18.0
 
 ## 0.4.0 (2022-08-06)
 
-## Changes
+### Changes
 
 * Start using `modernc.org/sqlite` for SQLite
 
 ## 0.3.0 (2022-08-05)
 
-## Changes
+### Changes
 
 * Implement more graceful handling of graph-drawing attempts without any bins
 * Less error-prone handling for conjuring our database queries
