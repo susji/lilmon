@@ -9,8 +9,9 @@ import (
 )
 
 func measure(p *params_measure) {
-	db := db_init(p.db_path)
-	log.Println("Opening SQLite DB at ", p.db_path)
+	db_path := fmt.Sprintf("%s?_pragma=journal_mode(WAL)", p.db_path)
+	log.Println("Opening SQLite DB at ", db_path)
+	db := db_init(db_path)
 	defer func() {
 		if err := db.Close(); err != nil {
 			log.Println("warning: error when closing database: ", err)
