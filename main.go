@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"syscall"
 
-	_ "github.com/glebarez/go-sqlite"
+	_ "modernc.org/sqlite"
 )
 
 func make_sure_not_root() {
