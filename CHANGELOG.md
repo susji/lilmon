@@ -1,10 +1,14 @@
 # Changelog
 
-## next release (YYYY-MM-DD)
+## next version (YYYY-MM-DD)
+
+## 0.3.0 (2022-08-05)
 
 ## Changes
 
 * Implement more graceful handling of graph-drawing attempts without any bins
+* Less error-prone handling for conjuring our database queries
+* Default to using WAL with SQLite to avoid locking issues with readers vs. writers
 * README is again better
 
 ## 0.2.0 (2022-07-31)
