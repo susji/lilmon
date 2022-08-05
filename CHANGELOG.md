@@ -2,6 +2,12 @@
 
 ## next version (YYYY-MM-DD)
 
+## 0.4.0 (2022-08-06)
+
+## Changes
+
+* Start using `modernc.org/sqlite` for SQLite
+
 ## 0.3.0 (2022-08-05)
 
 ## Changes
