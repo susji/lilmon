@@ -67,7 +67,7 @@ const (
 type db_task struct {
 	kind int
 
-	prune_metric_name      string
+	prune_metric           *metric
 	prune_retention_period time.Duration
 
 	insert_measurement *measurement

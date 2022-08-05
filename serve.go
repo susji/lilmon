@@ -136,9 +136,10 @@ func serve_graph_gen(db *sql.DB, metrics []*metric, label string, sconfig *confi
 			fmt.Fprintln(w, "missing metric name")
 			return
 		}
-		metric := metric_find(metrics, metric_names[0])
-		if !is_metric_name_valid(metric_names[0]) || metric == nil {
-			log.Println(label, ": metric name invalid: ", metric_names[0])
+		mn := metric_names[0]
+		metric := metric_find(metrics, mn)
+		if metric == nil {
+			log.Println(label, ": metric name invalid: ", mn)
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintln(w, "bad metric name")
 			return

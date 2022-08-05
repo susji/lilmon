@@ -182,7 +182,7 @@ func graph_label(img *image.RGBA, x, y int, label string) {
 }
 
 func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, w io.Writer, sconfig *config_serve) error {
-	dps, err := db_datapoints_get(db, metric.name, time_start, time_end)
+	dps, err := db_datapoints_get(db, metric, time_start, time_end)
 	if err != nil {
 		log.Println("graph_generate: error from DB get: ", err)
 		return err

@@ -9,18 +9,25 @@ import (
 	"time"
 )
 
-func db_datapoints_get(db *sql.DB, metric string, time_start, time_end time.Time) (
+func db_table_name_get(metric *metric) string {
+	if !is_metric_name_valid(metric) {
+		panic(fmt.Sprintf("invalid metric name: %#v", metric))
+	}
+	return fmt.Sprintf("lilmon_metric_%s", metric.name)
+}
+
+func db_datapoints_get(db *sql.DB, metric *metric, time_start, time_end time.Time) (
 	[]datapoint, error) {
 
 	template_select_values := `
-SELECT timestamp, value FROM lilmon_metric_%s
+SELECT timestamp, value FROM %s
     WHERE
         timestamp >= DATETIME(%d, 'unixepoch')
         AND timestamp <= DATETIME(%d, 'unixepoch')
     ORDER BY timestamp ASC`
 	q := fmt.Sprintf(
 		template_select_values,
-		metric,
+		db_table_name_get(metric),
 		time_start.Unix(),
 		time_end.Unix())
 	rows, err := db.Query(q)
@@ -61,12 +68,12 @@ func db_init(db_path string) *sql.DB {
 
 func db_migrate(db *sql.DB, metrics []*metric) error {
 	template_table := `
-CREATE TABLE IF NOT EXISTS lilmon_metric_%s (
+CREATE TABLE IF NOT EXISTS %s (
     id INTEGER PRIMARY KEY,
     value DOUBLE PRECISION,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP);
-CREATE INDEX IF NOT EXISTS index_lilmon_metric_%s
-    ON lilmon_metric_%s (value, timestamp);
+CREATE INDEX IF NOT EXISTS index_%s
+    ON %s (value, timestamp);
 `
 	in_err := false
 	for n, m := range metrics {
@@ -74,7 +81,9 @@ CREATE INDEX IF NOT EXISTS index_lilmon_metric_%s
 			"Maybe creating tables and indices for metric %d/%d: %s (%s)\n",
 			n+1, len(metrics), m.name, m.description)
 
-		_, err := db.Query(fmt.Sprintf(template_table, m.name, m.name, m.name))
+		tn := db_table_name_get(m)
+		q := fmt.Sprintf(template_table, tn, tn, tn)
+		_, err := db.Query(q)
 		if err != nil {
 			log.Printf("failed to create table for metric %s: %v ", m.name, err)
 			in_err = true
@@ -87,8 +96,8 @@ CREATE INDEX IF NOT EXISTS index_lilmon_metric_%s
 }
 
 func db_writer(ctx context.Context, db *sql.DB, tasks <-chan db_task) {
-	template_insert := `INSERT INTO lilmon_metric_%s (value) VALUES (?)`
-	template_prune := `DELETE FROM lilmon_metric_%s WHERE timestamp < DATETIME('now', '-%d seconds')`
+	template_insert := `INSERT INTO %s (value) VALUES (?)`
+	template_prune := `DELETE FROM %s WHERE timestamp < DATETIME('now', '-%d seconds')`
 	for {
 		select {
 		case <-ctx.Done():
@@ -96,27 +105,27 @@ func db_writer(ctx context.Context, db *sql.DB, tasks <-chan db_task) {
 		case task := <-tasks:
 			switch task.kind {
 			case DB_TASK_INSERT:
-				metric := task.insert_measurement.metric.name
+				metric := task.insert_measurement.metric
 				value := task.insert_measurement.value
 				_, err := db.ExecContext(
 					ctx,
-					fmt.Sprintf(template_insert, metric),
+					fmt.Sprintf(template_insert, db_table_name_get(metric)),
 					value)
 				if err != nil {
 					log.Printf(
 						"metric insert failed for %s with value %f: %v\n",
-						metric, value, err)
+						metric.name, value, err)
 				}
 			case DB_TASK_PRUNE_TABLE:
-				metric := task.prune_metric_name
+				metric := task.prune_metric
 				retention_period := task.prune_retention_period
 
 				log.Printf(
 					"Pruning metric %s for older than %s entries.\n",
-					metric, retention_period)
+					metric.name, retention_period)
 				q := fmt.Sprintf(
 					template_prune,
-					metric,
+					db_table_name_get(metric),
 					int64(retention_period/time.Second))
 				_, err := db.ExecContext(ctx, q)
 				if err != nil {
@@ -141,7 +150,7 @@ func db_pruner(ctx context.Context, tasks chan<- db_task, metrics []*metric,
 			for _, m := range metrics {
 				tasks <- db_task{
 					kind:                   DB_TASK_PRUNE_TABLE,
-					prune_metric_name:      m.name,
+					prune_metric:           m,
 					prune_retention_period: retention_period,
 				}
 			}

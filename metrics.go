@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"os/exec"
 	"strconv"
@@ -64,15 +65,15 @@ func run_metrics(ctx context.Context, db *sql.DB, period time.Duration, shell st
 	}
 }
 
-func is_metric_name_valid(name string) bool {
-	return RE_NAME.MatchString(name)
+func is_metric_name_valid(metric *metric) bool {
+	return RE_NAME.MatchString(metric.name)
 }
 
 func validate_metrics(metrics []*metric) error {
 	in_err := false
 	for n, m := range metrics {
 		log.Printf("Validating metric name %d/%d: %s\n", n+1, len(metrics), m.name)
-		if !is_metric_name_valid(m.name) {
+		if !is_metric_name_valid(m) {
 			log.Println("... and the name is not valid.")
 			in_err = true
 		}
@@ -86,6 +87,9 @@ func validate_metrics(metrics []*metric) error {
 func metric_find(metrics []*metric, name string) *metric {
 	for _, cur := range metrics {
 		if cur.name == name {
+			if !is_metric_name_valid(cur) {
+				panic(fmt.Sprintf("invalid metric name: %#v", cur))
+			}
 			return cur
 		}
 	}

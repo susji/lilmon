@@ -154,14 +154,14 @@ func TestMetricNames(t *testing.T) {
 
 	for n, valid_name := range valid_names {
 		t.Run(fmt.Sprintf("%d_%s", n, valid_name), func(t *testing.T) {
-			if !is_metric_name_valid(valid_name) {
+			if !is_metric_name_valid(&metric{name: valid_name}) {
 				t.Error("should be valid but is not: ", n, valid_name)
 			}
 		})
 	}
 	for n, invalid_name := range invalid_names {
 		t.Run(fmt.Sprintf("%d_%s", n, invalid_name), func(t *testing.T) {
-			if is_metric_name_valid(invalid_name) {
+			if is_metric_name_valid(&metric{name: invalid_name}) {
 				t.Error("should be invalid but is not: ", n, invalid_name)
 			}
 		})
