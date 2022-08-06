@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.0 (2022-08-06)
+
+### Changes
+
+* Start using `gonum.org/v1/plot` to draw the graphs
+* README is again clearer
+* Update the example screenshot
+
 ## 0.4.1 (2022-08-06)
 
 ### Fixes
