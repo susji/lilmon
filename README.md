@@ -45,10 +45,11 @@ on each measurement.
 
 ## How does it look like?
 
-The current version (v0.2.0) looks quite, uh, ascetic:
+The graphs are drawn using `gonum.org/v1/plot`. Currently lilmon produces graphs
+like this:
 
 ![screenshot of lilmon
-UI](https://github.com/susji/lilmon/raw/main/lilmon.png "lilmon v0.2.0")
+UI](https://github.com/susji/lilmon/raw/main/lilmon.png "lilmon v0.x.y")
 
 ## Does lilmon do alerting?
 
