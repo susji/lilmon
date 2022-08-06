@@ -135,40 +135,57 @@ prefix in the example commands does mean a root shell according to the tradition
 
 1. Obtain a `lilmon` executable -- possibly `go build` is enough, see Go's
    cross-compiling instructions if you need to target different OS/arch
+
 2. Install the binary on your target machine:
+
 ```
 # install -m 0755 -o root -g root lilmon /usr/local/bin
 ```
+
 3. Create `/etc/lilmon.ini` -- use [the example file](lilmon.ini.example) as
    basis and make sure it is writable only by privileged users. Probably this
    means it should be owned by `root:root` or something similar.
+
 ```
 # install -T -m 0644 -o root -g root lilmon.ini.example /etc/lilmon.ini
 ```
 
 4. Copy the browser UI's HTML template to a privileged directory:
+
 ```
 # install -T -m 0644 -o root -g root lilmon.template.example /etc/lilmon.template
 ```
+
 5. Create a new non-privileged system user and group for lilmon:
+
 ```
 # adduser --disabled-login --system --no-create-home --group lilmon
 ```
+
 6. Create a directory suitable for storing the lilmon database:
+
 ```
 # mkdir /var/lilmon
 # chown lilmon:lilmon /var/lilmon
 ```
+
 7. Begin measuring as the `lilmon` user:
+
 ```
 # sudo -u lilmon /usr/local/bin/lilmon measure
 ```
+
 8. Begin serving the monitoring interface as the `lilmon` user. Please note that
    `lilmon serve` by default only listens on `localhost:15515`:
+
 ```
-# sudo -u lilmon /usr/local/bin/lilmon serve -addr "${LISTEN_ADDR}:15515"
+# sudo -u lilmon /usr/local/bin/lilmon serve -addr "${LISTEN_ADDR}:15515""
 ```
-9. Point your browser at `http://${LISTEN_ADDR}:15515`
+
+where `$LISTEN_ADDR` should be a suitable listening address or `0.0.0.0` if
+you want lilmon to listen on all addresses.
+
+9. Point your browser at the listener.
 
 ## What about TLS, rate limiting, authentication...?
 
