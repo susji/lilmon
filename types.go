@@ -12,8 +12,6 @@ type config struct {
 
 type config_serve struct {
 	width, height                                 int
-	pad_left, pad_right, pad_up, pad_down         int
-	label_max_y0, label_shift_x                   int
 	default_period, autorefresh_period, bin_width time.Duration
 }
 

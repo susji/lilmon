@@ -171,14 +171,6 @@ func (c *config) config_parse_serve() (*config_serve, error) {
 		width:  DEFAULT_GRAPH_WIDTH,
 		height: DEFAULT_GRAPH_HEIGHT,
 
-		pad_left:  DEFAULT_GRAPH_PAD_WIDTH_LEFT,
-		pad_right: DEFAULT_GRAPH_PAD_WIDTH_RIGHT,
-		pad_up:    DEFAULT_GRAPH_PAD_HEIGHT_UP,
-		pad_down:  DEFAULT_GRAPH_PAD_HEIGHT_DOWN,
-
-		label_max_y0:  DEFAULT_LABEL_MAX_Y0,
-		label_shift_x: DEFAULT_LABEL_SHIFT_X,
-
 		default_period:     DEFAULT_GRAPH_PERIOD,
 		autorefresh_period: DEFAULT_REFRESH_PERIOD,
 		bin_width:          DEFAULT_BIN_WIDTH,
@@ -193,18 +185,6 @@ func (c *config) config_parse_serve() (*config_serve, error) {
 				ret.width, err = strconv.Atoi(pair.Value)
 			case "graph_height":
 				ret.height, err = strconv.Atoi(pair.Value)
-			case "graph_pad_left":
-				ret.pad_left, err = strconv.Atoi(pair.Value)
-			case "graph_pad_right":
-				ret.pad_right, err = strconv.Atoi(pair.Value)
-			case "graph_pad_up":
-				ret.pad_up, err = strconv.Atoi(pair.Value)
-			case "graph_pad_down":
-				ret.pad_down, err = strconv.Atoi(pair.Value)
-			case "graph_label_max_y0":
-				ret.label_max_y0, err = strconv.Atoi(pair.Value)
-			case "graph_label_shift_x":
-				ret.label_shift_x, err = strconv.Atoi(pair.Value)
 			case "default_period":
 				ret.default_period, err = time.ParseDuration(pair.Value)
 			case "autorefresh_period":

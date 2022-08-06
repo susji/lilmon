@@ -4,18 +4,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"image"
-	"image/draw"
-	"image/png"
 	"io"
 	"log"
 	"math"
-	"strconv"
 	"time"
 
-	"golang.org/x/image/font"
-	"golang.org/x/image/font/basicfont"
-	"golang.org/x/image/math/fixed"
+	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg"
 )
 
 func op_identity(i int, vals []float64, _ []time.Time) float64 {
@@ -124,63 +120,6 @@ func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time,
 	return result, labels, val_min, val_max
 }
 
-func graph_draw(values []float64, labels []time.Time, time_format string,
-	val_min, val_max float64, sconfig *config_serve) image.Image {
-
-	total_w := sconfig.width + sconfig.pad_left + sconfig.pad_right
-	total_h := sconfig.height + sconfig.pad_up + sconfig.pad_down
-	pad_w := sconfig.pad_left + sconfig.pad_right
-	pad_h := sconfig.pad_up + sconfig.pad_down
-	w := total_w - pad_w
-	h := total_h - pad_h
-	bin_w := w / len(values)
-	g := image.NewRGBA(image.Rect(0, 0, total_w, total_h))
-	draw.Draw(g, g.Bounds(), &image.Uniform{COLOR_BG}, image.Point{}, draw.Src)
-
-	marker_halfwidth := bin_w / 2
-	cur_x := sconfig.pad_left + bin_w/2 - bin_w
-	for bin := 0; bin < len(values); bin++ {
-		cur_x += bin_w
-		if math.IsNaN(values[bin]) {
-			continue
-		}
-		// do Y calculations in zero reference, that is, normalize Y values as [0, 1].
-		norm_y := (values[bin] - val_min) / (val_max - val_min)
-		cur_y := float64(sconfig.pad_up) + math.Floor(float64(h)-float64(h)*norm_y)
-		marker := image.Rect(
-			cur_x-marker_halfwidth, int(cur_y),
-			cur_x+marker_halfwidth, total_h-sconfig.pad_down)
-		draw.Draw(g, marker, &image.Uniform{COLOR_FG}, image.Point{}, draw.Src)
-
-	}
-
-	label_max := strconv.FormatFloat(val_max, 'g', 6, 64)
-	label_min := strconv.FormatFloat(val_min, 'g', 6, 64)
-	graph_label(g, total_w-int(float64(sconfig.pad_right)*0.8),
-		sconfig.pad_up+sconfig.label_max_y0, label_max)
-	graph_label(g, total_w-int(float64(sconfig.pad_right)*0.8),
-		total_h-sconfig.pad_down, label_min)
-
-	label_start := labels[0].Format(time_format)
-	label_end := labels[len(labels)-1].Format(time_format)
-	graph_label(g, 0, total_h, label_start)
-	graph_label(g, total_w-sconfig.label_shift_x, total_h, label_end)
-
-	return g
-}
-
-func graph_label(img *image.RGBA, x, y int, label string) {
-	// https://stackoverflow.com/a/38300583
-	point := fixed.Point26_6{X: fixed.I(x), Y: fixed.I(y)}
-	d := &font.Drawer{
-		Dst:  img,
-		Src:  image.NewUniform(COLOR_LABEL),
-		Face: basicfont.Face7x13,
-		Dot:  point,
-	}
-	d.DrawString(label)
-}
-
 func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, w io.Writer, sconfig *config_serve) error {
 	dps, err := db_datapoints_get(db, metric, time_start, time_end)
 	if err != nil {
@@ -206,24 +145,47 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 		return errors.New("cannot graph zero bins")
 	}
 	// Heavy lifting: obtain the binned data.
-	binned, labels, val_min, val_max := bin_datapoints(
+	binned, labels, _, _ := bin_datapoints(
 		dps, int64(bins), time_start, time_end, op)
 
-	if val_min == val_max {
-		val_min--
-		val_max++
-	}
-	if metric.options.y_min != nil {
-		val_min = *metric.options.y_min
-	}
-	if metric.options.y_max != nil {
-		val_max = *metric.options.y_max
+	xys := plotter.XYs{}
+	for i := 0; i < len(binned); i++ {
+		if math.IsNaN(binned[i]) {
+			continue
+		}
+		xys = append(xys, plotter.XY{X: float64(labels[i].Unix()), Y: binned[i]})
 	}
 
-	tf := determine_timestamp_format(time_start, time_end)
-	g := graph_draw(binned, labels, tf, val_min, val_max, sconfig)
-	if err := png.Encode(w, g); err != nil {
+	s, err := plotter.NewScatter(xys)
+	if err != nil {
 		return err
 	}
+
+	p := plot.New()
+	p.Add(s)
+	p.Title.Text = ""
+	p.X.Label.Text = ""
+	p.Y.Label.Text = ""
+	p.X.Tick.Marker = plot.TimeTicks{Format: determine_timestamp_format(time_start, time_end)}
+
+	p.X.Min = float64(time_start.Unix())
+	p.X.Max = float64(time_end.Unix())
+
+	if metric.options.y_min != nil {
+		p.Y.Min = *metric.options.y_min
+	}
+	if metric.options.y_max != nil {
+		p.Y.Max = *metric.options.y_max
+	}
+
+	wt, err := p.WriterTo(vg.Length(sconfig.width), vg.Length(sconfig.height), "png")
+	if err != nil {
+		return err
+	}
+	_, err = wt.WriteTo(w)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

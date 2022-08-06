@@ -7,12 +7,6 @@ measure_period=15s     ; how often metrics are measured
 default_period=1h
 graph_width=300
 graph_height=100
-graph_pad_left=10
-graph_pad_right=100
-graph_pad_up=25
-graph_pad_down=25
-graph_label_max_y0=10
-graph_label_shift_x=150
 bin_width=1m           ; some small multiple of 'measure_period' is good
 autorefresh_period=60s
 

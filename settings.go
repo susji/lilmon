@@ -29,21 +29,15 @@ const (
 )
 
 const (
-	DEFAULT_GRAPH_PERIOD          = 1 * time.Hour
-	DEFAULT_GRAPH_WIDTH           = 300
-	DEFAULT_GRAPH_HEIGHT          = 100
-	DEFAULT_GRAPH_PAD_WIDTH_LEFT  = 10
-	DEFAULT_GRAPH_PAD_HEIGHT_UP   = 25
-	DEFAULT_GRAPH_PAD_WIDTH_RIGHT = 100
-	DEFAULT_GRAPH_PAD_HEIGHT_DOWN = 25
-	DEFAULT_LABEL_MAX_Y0          = 10
-	DEFAULT_LABEL_SHIFT_X         = DEFAULT_GRAPH_PAD_WIDTH_RIGHT * 1.5
-	DEFAULT_RETENTION_TIME        = 90 * 24 * time.Hour
-	DEFAULT_REFRESH_PERIOD        = 30
-	DEFAULT_PRUNE_PERIOD          = 15 * time.Minute
-	DEFAULT_MEASUREMENT_PERIOD    = 15 * time.Second
-	DEFAULT_BIN_WIDTH             = 1 * time.Minute
-	CONFIG_DELIM                  = "|"
+	DEFAULT_GRAPH_PERIOD       = 1 * time.Hour
+	DEFAULT_GRAPH_WIDTH        = 300
+	DEFAULT_GRAPH_HEIGHT       = 100
+	DEFAULT_RETENTION_TIME     = 90 * 24 * time.Hour
+	DEFAULT_REFRESH_PERIOD     = 30
+	DEFAULT_PRUNE_PERIOD       = 15 * time.Minute
+	DEFAULT_MEASUREMENT_PERIOD = 15 * time.Second
+	DEFAULT_BIN_WIDTH          = 1 * time.Minute
+	CONFIG_DELIM               = "|"
 )
 
 var (
