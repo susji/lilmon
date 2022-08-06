@@ -182,8 +182,4 @@ I strongly recommend a reverse proxy for handling these things.
 ## TODO
 
 - [ ] cache graphs
-- [ ] slightly more responsive html
-- [ ] render a bit more guiding ticks for graphs
-- [ ] implement some logic to filter out outlier data points as a graph option for noisy data
 - [ ] support units for smart Y labels (eg. "bytes")
-- [ ] make graph fonts configurable (at least size)
