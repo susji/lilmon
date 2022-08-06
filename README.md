@@ -125,13 +125,17 @@ in any manner. Your usage experience will be mildly tedious. I will fix this in
 near future.
 
 These manual steps should be roughly enough to run lilmon experimentally in
-whatever UNIX-like environment is supported by the Go toolchain. Below we assume
-GNU/Linux, so please note any differences for *BSD. As mentioned above, please
-do not run lilmon as root or any other unnecessarily privileged user.
+whatever UNIX-like environment is supported by the Go toolchain. Please note
+that the pure-Go SQLite library also sets some limitations for platform support.
+
+Below we assume GNU/Linux, so please note any differences for *BSD. As mentioned
+above, please do not run lilmon as root or any other unnecessarily privileged
+user.
 
 Below we assume that `root` is the privileged user and its primary group is
-`root`. It could be something else, too, like `wheel`. Please note that the `#`
-prefix in the example commands does mean a root shell according to the tradition.
+`root`. The group could be something else, too, like `wheel`. Please note that
+the `#` prefix in the example commands does mean a root shell according to the
+tradition.
 
 1. Obtain a `lilmon` executable -- possibly `go build` is enough, see Go's
    cross-compiling instructions if you need to target different OS/arch
