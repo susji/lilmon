@@ -183,7 +183,7 @@ tradition.
    `lilmon serve` by default only listens on `localhost:15515`:
 
 ```
-# sudo -u lilmon /usr/local/bin/lilmon serve -addr "${LISTEN_ADDR}:15515""
+# sudo -u lilmon /usr/local/bin/lilmon serve -addr "${LISTEN_ADDR}:15515"
 ```
 
 where `$LISTEN_ADDR` should be a suitable listening address or `0.0.0.0` if
