@@ -63,7 +63,8 @@ No.
 
 ## The graphs look terrible!
 
-Yes. I'll probably make them less terrible in future.
+~~Yes. I'll probably make them less terrible in future.~~
+Much better now, right?
 
 ## Will lilmon support monitoring more than one machine?
 
