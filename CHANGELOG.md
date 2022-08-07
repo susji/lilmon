@@ -9,7 +9,7 @@
 ### Additions
 
 * Give possibility to render neater Y values with new graphing options `kibi`
-  and `kilo` which render neater numbers in base-2 and base-10
+  and `kilo` which render in units of base-2 and base-10, respectively
 
 ## 0.6.0 (2022-08-07)
 
