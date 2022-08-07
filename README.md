@@ -111,10 +111,13 @@ parsing.
   - `deriv`: The time series is numerically differentiated with respect to time
   - `y_min=<float64>`: Graph's minimum Y value
   - `y_max=<float64>`: Graph's maximum Y value
+  - `kibi` and `kilo`: Y values are rendered with unit prefixes in base-2 or base-10, respectively
 
 `deriv` is useful if your metric is, for example, measuring transmitted or
 received bytes for a network interface. By using `deriv`, the UI will then
 display transfer rates (bytes/second) instead of bytes.
+
+`kibi` and `kilo` will make larger values much more easier to read.
 
 ## Can you edit the browser UI?
 
