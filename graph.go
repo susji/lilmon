@@ -166,7 +166,12 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 	p.Title.Text = ""
 	p.X.Label.Text = ""
 	p.Y.Label.Text = ""
-	p.X.Tick.Marker = plot.TimeTicks{Format: determine_timestamp_format(time_start, time_end)}
+	p.X.Tick.Marker = plot.TimeTicks{
+		Format: determine_timestamp_format(time_start, time_end),
+		Time: func(t float64) time.Time {
+			return time.Unix(int64(t), 0)
+		},
+	}
 
 	p.X.Min = float64(time_start.Unix())
 	p.X.Max = float64(time_end.Unix())
