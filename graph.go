@@ -121,6 +121,10 @@ func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time,
 	return result, labels, val_min, val_max
 }
 
+func format_short_value(v float64) string {
+	return strconv.FormatFloat(v, 'f', -1, 64)
+}
+
 type KiloTicker struct{}
 
 func (KiloTicker) Ticks(min, max float64) []plot.Tick {
@@ -156,7 +160,7 @@ func (KiloTicker) Ticks(min, max float64) []plot.Tick {
 		default:
 			continue
 		}
-		got[i].Label = strconv.FormatFloat(v/float64(d), 'g', 3, 64) + " " + s
+		got[i].Label = format_short_value(v/float64(d)) + " " + s
 	}
 	return got
 }
@@ -196,7 +200,8 @@ func (KibiTicker) Ticks(min, max float64) []plot.Tick {
 		default:
 			continue
 		}
-		got[i].Label = strconv.FormatFloat(v/float64(d), 'g', 3, 64) + " " + s
+		got[i].Label = format_short_value(v/float64(d)) + " " + s
+
 	}
 	return got
 }
