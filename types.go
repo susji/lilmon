@@ -43,6 +43,7 @@ type metric struct {
 
 type graph_options struct {
 	differentiate bool
+	kibi, kilo    bool
 	y_min, y_max  *float64
 }
 

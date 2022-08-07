@@ -51,6 +51,10 @@ func config_parse_metric_options(options string) (graph_options, []error) {
 		switch key {
 		case "deriv":
 			ret.differentiate = true
+		case "kibi":
+			ret.kibi = true
+		case "kilo":
+			ret.kilo = true
 		case "y_min":
 			val, err := strconv.ParseFloat(value, 64)
 			if err != nil {

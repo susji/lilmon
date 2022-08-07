@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"math"
+	"strconv"
 	"time"
 
 	"gonum.org/v1/plot"
@@ -120,6 +121,86 @@ func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time,
 	return result, labels, val_min, val_max
 }
 
+type KiloTicker struct{}
+
+func (KiloTicker) Ticks(min, max float64) []plot.Tick {
+	got := plot.DefaultTicks{}.Ticks(min, max)
+	for i := range got {
+		if got[i].Label == "" {
+			continue
+		}
+
+		var d int64
+		var s string
+
+		v := got[i].Value
+		switch {
+		case v > 1000*1000*1000*1000*1000*1000:
+			d = 1000 * 1000 * 1000 * 1000 * 1000 * 1000
+			s = "E"
+		case v > 1000*1000*1000*1000*1000:
+			d = 1000 * 1000 * 1000 * 1000 * 1000
+			s = "P"
+		case v > 1000*1000*1000*1000:
+			d = 1000 * 1000 * 1000 * 1000
+			s = "T"
+		case v > 1000*1000*1000:
+			d = 1000 * 1000 * 1000
+			s = "G"
+		case v > 1000*1000:
+			d = 1000 * 1000
+			s = "M"
+		case v > 1000:
+			d = 1000
+			s = "k"
+		default:
+			continue
+		}
+		got[i].Label = strconv.FormatFloat(v/float64(d), 'g', 3, 64) + " " + s
+	}
+	return got
+}
+
+type KibiTicker struct{}
+
+func (KibiTicker) Ticks(min, max float64) []plot.Tick {
+	got := plot.DefaultTicks{}.Ticks(min, max)
+	for i := range got {
+		if got[i].Label == "" {
+			continue
+		}
+
+		var d int64
+		var s string
+
+		v := got[i].Value
+		switch {
+		case v > 1024*1024*1024*1024*1024*1024:
+			d = 1024 * 1024 * 1024 * 1024 * 1024 * 1024
+			s = "Ei"
+		case v > 1024*1024*1024*1024*1024:
+			d = 1024 * 1024 * 1024 * 1024 * 1024
+			s = "Pi"
+		case v > 1024*1024*1024*1024:
+			d = 1024 * 1024 * 1024 * 1024
+			s = "Ti"
+		case v > 1024*1024*1024:
+			d = 1024 * 1024 * 1024
+			s = "Gi"
+		case v > 1024*1024:
+			d = 1024 * 1024
+			s = "Mi"
+		case v > 1024:
+			d = 1024
+			s = "Ki"
+		default:
+			continue
+		}
+		got[i].Label = strconv.FormatFloat(v/float64(d), 'g', 3, 64) + " " + s
+	}
+	return got
+}
+
 func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, w io.Writer, sconfig *config_serve) error {
 	dps, err := db_datapoints_get(db, metric, time_start, time_end)
 	if err != nil {
@@ -176,6 +257,17 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 			return time.Unix(int64(t), 0)
 		},
 	}
+
+	var y_ticker plot.Ticker
+	switch {
+	case metric.options.kilo:
+		y_ticker = KiloTicker{}
+	case metric.options.kibi:
+		y_ticker = KibiTicker{}
+	default:
+		y_ticker = plot.DefaultTicks{}
+	}
+	p.Y.Tick.Marker = y_ticker
 
 	p.X.Min = float64(time_start.Unix())
 	p.X.Max = float64(time_end.Unix())

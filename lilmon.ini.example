@@ -14,7 +14,7 @@ graph_format=svg       ; see `go doc gonum.org/v1/plot.Plot.WriterTo` for suppor
 graph_mimetype=image/svg+xml
 
 [metrics]
-metric=n_temp_files|Files in /tmp|y_min=0|find /tmp/ -type f|wc -l
+metric=n_temp_files|Files in /tmp|y_min=0,kilo|find /tmp/ -type f|wc -l
 metric=n_processes|Visible processes (all users)|y_min=0,y_max=1000|ps -A|wc -l
 metric=rate_logged_in_users|Rate of user logins|deriv|who|wc -l
 metric="n_subshell_constant|Plain silly||{ echo -n \"one\"; echo -n two; echo -n three; }|wc -c"

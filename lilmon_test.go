@@ -256,6 +256,14 @@ func TestParseOptions(t *testing.T) {
 			want: graph_options{differentiate: true},
 		},
 		{
+			give: "kibi",
+			want: graph_options{kibi: true},
+		},
+		{
+			give: "kilo",
+			want: graph_options{kilo: true},
+		},
+		{
 			give: "y_min=-10, y_max = 20.5 ",
 			want: graph_options{y_min: &y_min, y_max: &y_max},
 		},
