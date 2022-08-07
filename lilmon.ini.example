@@ -9,7 +9,7 @@ graph_width=300
 graph_height=100
 bin_width=1m           ; some small multiple of 'measure_period' is good
 autorefresh_period=60s
-graph_format=svg       ; see `go doc numgo.org/v1/plot.Plot.WriterTo` for supported formats
+graph_format=svg       ; see `go doc gonum.org/v1/plot.Plot.WriterTo` for supported formats
 graph_mimetype=image/svg+xml
 
 [metrics]
