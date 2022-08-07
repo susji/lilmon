@@ -37,6 +37,7 @@ const (
 	DEFAULT_PRUNE_PERIOD       = 15 * time.Minute
 	DEFAULT_MEASUREMENT_PERIOD = 15 * time.Second
 	DEFAULT_BIN_WIDTH          = 1 * time.Minute
+	DEFAULT_MAX_BINS           = DEFAULT_GRAPH_WIDTH / 2
 	DEFAULT_GRAPH_FORMAT       = "svg"
 	DEFAULT_GRAPH_MIMETYPE     = "image/svg+xml"
 	CONFIG_DELIM               = "|"

@@ -174,6 +174,7 @@ func (c *config) config_parse_serve() (*config_serve, error) {
 		default_period:     DEFAULT_GRAPH_PERIOD,
 		autorefresh_period: DEFAULT_REFRESH_PERIOD,
 		bin_width:          DEFAULT_BIN_WIDTH,
+		max_bins:           DEFAULT_MAX_BINS,
 
 		graph_format:   DEFAULT_GRAPH_FORMAT,
 		graph_mimetype: DEFAULT_GRAPH_MIMETYPE,
@@ -194,6 +195,8 @@ func (c *config) config_parse_serve() (*config_serve, error) {
 				ret.autorefresh_period, err = time.ParseDuration(pair.Value)
 			case "bin_width":
 				ret.bin_width, err = time.ParseDuration(pair.Value)
+			case "max_bins":
+				ret.max_bins, err = strconv.Atoi(pair.Value)
 			case "graph_format":
 				ret.graph_format = pair.Value
 			case "graph_mimetype":

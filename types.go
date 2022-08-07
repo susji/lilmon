@@ -11,7 +11,7 @@ type config struct {
 }
 
 type config_serve struct {
-	width, height                                 int
+	width, height, max_bins                       int
 	default_period, autorefresh_period, bin_width time.Duration
 	graph_format, graph_mimetype                  string
 }

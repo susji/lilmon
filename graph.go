@@ -137,9 +137,8 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 	//     small coefficient..
 
 	bins := int(time_end.Sub(time_start) / sconfig.bin_width)
-	max_bins := sconfig.width / 2
-	if bins > max_bins {
-		bins = max_bins
+	if bins > sconfig.max_bins {
+		bins = sconfig.max_bins
 	}
 	if bins == 0 {
 		return errors.New("cannot graph zero bins")
