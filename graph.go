@@ -163,6 +163,7 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 
 	p := plot.New()
 	p.Add(s)
+	p.Add(plotter.NewGrid())
 	p.BackgroundColor = COLOR_BG
 	p.X.LineStyle.Color = COLOR_LABEL
 	p.Y.LineStyle.Color = COLOR_LABEL
