@@ -174,6 +174,9 @@ func (c *config) config_parse_serve() (*config_serve, error) {
 		default_period:     DEFAULT_GRAPH_PERIOD,
 		autorefresh_period: DEFAULT_REFRESH_PERIOD,
 		bin_width:          DEFAULT_BIN_WIDTH,
+
+		graph_format:   DEFAULT_GRAPH_FORMAT,
+		graph_mimetype: DEFAULT_GRAPH_MIMETYPE,
 	}
 
 	in_err := false
@@ -191,6 +194,10 @@ func (c *config) config_parse_serve() (*config_serve, error) {
 				ret.autorefresh_period, err = time.ParseDuration(pair.Value)
 			case "bin_width":
 				ret.bin_width, err = time.ParseDuration(pair.Value)
+			case "graph_format":
+				ret.graph_format = pair.Value
+			case "graph_mimetype":
+				ret.graph_mimetype = pair.Value
 			default:
 				err = fmt.Errorf(
 					"%d: unrecognized config item: %s",

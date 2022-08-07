@@ -160,13 +160,13 @@ func serve_graph_gen(db *sql.DB, metrics []*metric, label string, sconfig *confi
 
 		b := bytes.Buffer{}
 		if err := graph_generate(db, metric, time_start, time_end, &b, sconfig); err != nil {
-			log.Println(label, ": PNG encoding failed: ", err)
+			log.Println(label, ": graph generation failed: ", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintln(w, "graph generation failed")
 			return
 		}
 		gb := b.Bytes()
-		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("Content-Type", sconfig.graph_mimetype)
 		w.Header().Set("Content-Length", strconv.Itoa(len(gb)))
 		w.WriteHeader(http.StatusOK)
 		w.Write(gb)

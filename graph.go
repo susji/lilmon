@@ -178,7 +178,8 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 		p.Y.Max = *metric.options.y_max
 	}
 
-	wt, err := p.WriterTo(vg.Length(sconfig.width), vg.Length(sconfig.height), "png")
+	wt, err := p.WriterTo(
+		vg.Length(sconfig.width), vg.Length(sconfig.height), sconfig.graph_format)
 	if err != nil {
 		return err
 	}
