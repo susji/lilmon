@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.6.0 (2022-08-07)
+
+### Changes
+
+* When graphing, use more suitable timestamp formats
+* Try to render timestamps using the local timezone
+* As before, use hardcoded constants for graph colors
+* Make graph format configurable and default to SVG
+* Make `max_bins` configurable
+* Update the example screenshot
+
 ## 0.5.0 (2022-08-06)
 
 ### Changes
