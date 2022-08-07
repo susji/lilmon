@@ -44,7 +44,7 @@ const (
 )
 
 var (
-	COLOR_BG                = color.RGBA{230, 230, 230, 255}
+	COLOR_BG                = color.RGBA{255, 255, 255, 255}
 	COLOR_FG                = color.RGBA{255, 0, 0, 255}
 	COLOR_LABEL             = color.RGBA{0, 0, 0, 255}
 	TIMESTAMP_FORMAT_YEAR   = "2006-01-02\n15:04"

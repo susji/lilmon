@@ -159,9 +159,13 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 	if err != nil {
 		return err
 	}
+	s.GlyphStyle.Color = COLOR_FG
 
 	p := plot.New()
 	p.Add(s)
+	p.BackgroundColor = COLOR_BG
+	p.X.LineStyle.Color = COLOR_LABEL
+	p.Y.LineStyle.Color = COLOR_LABEL
 	p.Title.Text = ""
 	p.X.Label.Text = ""
 	p.Y.Label.Text = ""
