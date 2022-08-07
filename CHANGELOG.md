@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.0 (2022-08-07)
+
+### Changes
+
+* Graphs include a grid now
+
+### Additions
+
+* Give possibility to render neater Y values with new graphing options `kibi`
+  and `kilo` which render neater numbers in base-2 and base-10
+
 ## 0.6.0 (2022-08-07)
 
 ### Changes
