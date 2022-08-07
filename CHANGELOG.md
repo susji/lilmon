@@ -1,5 +1,11 @@
 # Changelog
 
+## next version (YYYY-MM-DD)
+
+### Fixes
+
+* Values rendered with `kibi` and `kilo` should now make more sense
+
 ## 0.7.0 (2022-08-07)
 
 ### Changes
