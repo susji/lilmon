@@ -205,6 +205,72 @@ I strongly recommend a reverse proxy for handling these things.
 - If a metric is disabled by removing it from the configuration file, its
   historical data will not be automatically pruned after the retention period
 
+## Example metrics
+
+These are some metrics I use. They may fail in cases I have not thought about.
+There are many ways to obtain similar results. The primary reason for including
+these here is to give you inspiration on how to use lilmon.
+
+As mentioned above, to be safer, do not run any of these as a privileged user.
+
+### TX & RX speed of some interface
+
+Use the correct interface name in place of `if-name`. If you need to measure
+than one interface, define more similar metrics with different metric name and
+`if-name`. Silly but simple! Also, note the `deriv` in the graphing options,
+which then numerically differentiate the raw byte readings to produce an
+approximation of TX & RX speed.
+
+#### Linux
+
+```
+metric=bytes_wifi_rx|Wifi RX|y_min=0,deriv,kilo|cat /proc/net/dev|fgrep if-name|awk '{print $2}'
+metric=bytes_wifi_tx|Wifi TX|y_min=0,deriv,kilo|cat /proc/net/dev|fgrep if-name|awk '{print $10}'
+```
+
+#### OpenBSD
+
+```
+metric=bytes_rx_em0|Wired RX|deriv,y_min=0,kilo|netstat -n -i -b|fgrep em0|fgrep Link|awk '{print $5}'
+metric=bytes_tx_em0|Wired TX|deriv,y_min=0,kilo|netstat -n -i -b|fgrep em0|fgrep Link|awk '{print $6}'
+```
+
+### Temperature sensor
+
+#### Linux
+
+The example here makes use of `jq` to search the JSON dump produced by `sensors
+-j`. See what `sensors -j` displays for you and accomodate the `jq` filter. You
+may of course produce the same sensor value by just parsing and filtering the
+regular text dump.
+
+```
+metric=temp_cpu|CPU temperature|y_min=30,y_max=90|sensors -j|jq '.["dev::temp1::temp1_input"]'
+```
+
+#### OpenBSD
+
+Look at the output of `sysctl hw.sensors` and figure out the the exact path for
+your device. If it has something other than a raw float value, filter the rest
+out.
+
+```
+metric=cpu_temp|CPU temperature|y_min=40,y_max=90|sysctl hw.sensors.km0.temp0|cut -d '=' -f2|cut -d ' ' -f 1
+```
+
+### Diagnostic ping
+
+#### Linux
+
+Note that in this example we use the `-w 10` option to define a hard deadline of
+10 seconds. This is not fully portable, so see your `man 8 ping` for more
+details. If necessary, something like `timeout(8)` may also be used to force
+program exit.
+
+metric=ping_google|PING Google|y_min=0|ping -q -w 10 -c 2 8.8.8.8|tail -1|cut -d
+'=' -f2|cut -d '/' -f2
+
+
 ## TODO
 
 - [ ] cache graphs
