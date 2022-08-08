@@ -1,5 +1,11 @@
 # Changelog
 
+## next version (YYYY-MM-DD)
+
+### Additions
+
+* README: Included some realistic metric examples
+
 ## 0.7.2 (2022-08-08)
 
 ### Fixes
