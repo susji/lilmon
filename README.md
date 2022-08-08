@@ -196,6 +196,11 @@ you want lilmon to listen on all addresses.
 
 9. Point your browser at the listener.
 
+## Do I need timeouts for my commands?
+
+It does not hurt, but lilmon tries to cancel measurement commands which take
+`$TOO_LONG` to complete. See `metrics.go` for the details.
+
 ## What about TLS, rate limiting, authentication...?
 
 I strongly recommend a reverse proxy for handling these things.
