@@ -1,6 +1,6 @@
 # Changelog
 
-## next version (YYYY-MM-DD)
+## 0.7.1 (2022-08-08)
 
 ### Fixes
 
