@@ -272,9 +272,10 @@ Note that in this example we use the `-w 10` option to define a hard deadline of
 details. If necessary, something like `timeout(8)` may also be used to force
 program exit.
 
+```
 metric=ping_google|PING Google|y_min=0|ping -q -w 10 -c 2 8.8.8.8|tail -1|cut -d
 '=' -f2|cut -d '/' -f2
-
+```
 
 ## TODO
 
