@@ -222,9 +222,11 @@ As mentioned above, to be safer, do not run any of these as a privileged user.
 
 Use the correct interface name in place of `if-name`. If you need to measure
 than one interface, define more similar metrics with different metric name and
-`if-name`. Silly but simple! Also, note the `deriv` in the graphing options,
-which then numerically differentiate the raw byte readings to produce an
-approximation of TX & RX speed.
+`if-name`. Silly but simple!
+
+Also, note the `deriv` in the graphing options, which means that the raw byte
+counts are numerically differentiated when the graph is drawn. The result is
+then a decent approximation of TX & RX speed.
 
 #### Linux
 
@@ -263,18 +265,26 @@ out.
 metric=cpu_temp|CPU temperature|y_min=40,y_max=90|sysctl hw.sensors.km0.temp0|cut -d '=' -f2|cut -d ' ' -f 1
 ```
 
-### Diagnostic ping
+### Ping round-trip time for a well-known target
 
 #### Linux
 
 Note that in this example we use the `-w 10` option to define a hard deadline of
 10 seconds. This is not fully portable, so see your `man 8 ping` for more
-details. If necessary, something like `timeout(8)` may also be used to force
-program exit.
+details. Something like the `timeout` command is available on many platforms,
+and it works well for making sure programs time out.
 
 ```
 metric=ping_google|PING Google|y_min=0|ping -q -w 10 -c 2 8.8.8.8|tail -1|cut -d
 '=' -f2|cut -d '/' -f2
+```
+
+### System load (1 min)
+
+#### OpenBSD
+
+```
+metric=load_1|1 minute CPU LOAD|y_min=0|uptime|awk '{print $11}'|cut -d ',' -f1
 ```
 
 ## TODO
