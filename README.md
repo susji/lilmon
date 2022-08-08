@@ -25,23 +25,25 @@ page.
 
 ## What does lilmon measure?
 
-lilmon measures numbers. To do this, lilmon is given a set of *metrics*. Each
-metric has a
+lilmon measures numeric values. To do this, lilmon is given a set of *metrics*.
+Each metric has a
 
 - name
 - description
 - graphing options
-- command.
+- command
 
 lilmon uses raw shell-commands to obtain these numeric values for each specified
 metric. Commands are shell-expanded like
 
     $ /bin/sh -c '<metric-command>'
 
-and lilmon expects to receive a single number back. The number is interpreted as
-a `float64` so integers are also fine. A minimalistic example of a metric
-command would then be `echo 123` which would result in a static value of `123`
-on each measurement.
+and as a result, lilmon expects to receive a single value back via `stdout`. The
+value is interpreted as a `float64`. Integers are also fine. Whitespace is
+trimmed before any interpretation is attempted.
+
+A minimalistic example of a metric command would then be `echo 123` which would
+result in a static value of `123` on each measurement.
 
 ## How does it look like?
 
@@ -275,8 +277,7 @@ details. Something like the `timeout` command is available on many platforms,
 and it works well for making sure programs time out.
 
 ```
-metric=ping_google|PING Google|y_min=0|ping -q -w 10 -c 2 8.8.8.8|tail -1|cut -d
-'=' -f2|cut -d '/' -f2
+metric=ping_google|PING Google|y_min=0|ping -q -w 10 -c 2 8.8.8.8|tail -1|cut -d'=' -f2|cut -d '/' -f2
 ```
 
 ### System load (1 min)
