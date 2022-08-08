@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.2 (2022-08-08)
+
+### Fixes
+
+* Once more: Values should now be more readable
+
 ## 0.7.1 (2022-08-08)
 
 ### Fixes
