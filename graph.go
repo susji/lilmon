@@ -180,7 +180,7 @@ func val_to_unit_prefix_base2(v float64) (bool, float64, string) {
 }
 
 func val_format_for_printing(v float64) string {
-	return strconv.FormatFloat(v, 'f', -1, 64)
+	return strconv.FormatFloat(v, 'g', 3, 64)
 }
 
 type TransformerTicker struct {
