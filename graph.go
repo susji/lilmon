@@ -121,87 +121,100 @@ func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time,
 	return result, labels, val_min, val_max
 }
 
-func format_short_value(v float64) string {
+func val_to_unit_prefix_base10(v float64) (bool, float64, string) {
+	var d int64
+	var s string
+
+	switch {
+	case v >= 1000*1000*1000*1000*1000*1000:
+		d = 1000 * 1000 * 1000 * 1000 * 1000 * 1000
+		s = "E"
+	case v >= 1000*1000*1000*1000*1000:
+		d = 1000 * 1000 * 1000 * 1000 * 1000
+		s = "P"
+	case v >= 1000*1000*1000*1000:
+		d = 1000 * 1000 * 1000 * 1000
+		s = "T"
+	case v >= 1000*1000*1000:
+		d = 1000 * 1000 * 1000
+		s = "G"
+	case v >= 1000*1000:
+		d = 1000 * 1000
+		s = "M"
+	case v >= 1000:
+		d = 1000
+		s = "k"
+	default:
+		return false, v, ""
+	}
+	return true, v / float64(d), s
+}
+
+func val_to_unit_prefix_base2(v float64) (bool, float64, string) {
+	var d int64
+	var s string
+
+	switch {
+	case v >= 1024*1024*1024*1024*1024*1024:
+		d = 1024 * 1024 * 1024 * 1024 * 1024 * 1024
+		s = "Ei"
+	case v >= 1024*1024*1024*1024*1024:
+		d = 1024 * 1024 * 1024 * 1024 * 1024
+		s = "Pi"
+	case v >= 1024*1024*1024*1024:
+		d = 1024 * 1024 * 1024 * 1024
+		s = "Ti"
+	case v >= 1024*1024*1024:
+		d = 1024 * 1024 * 1024
+		s = "Gi"
+	case v >= 1024*1024:
+		d = 1024 * 1024
+		s = "Mi"
+	case v >= 1024:
+		d = 1024
+		s = "Ki"
+	default:
+		return false, v, ""
+	}
+	return true, v / float64(d), s
+}
+
+func val_format_for_printing(v float64) string {
 	return strconv.FormatFloat(v, 'f', -1, 64)
 }
 
-type KiloTicker struct{}
+type TransformerTicker struct {
+	ValueTransformer func(float64) (bool, float64, string)
+}
 
-func (KiloTicker) Ticks(min, max float64) []plot.Tick {
+func (t TransformerTicker) Ticks(min, max float64) []plot.Tick {
 	got := plot.DefaultTicks{}.Ticks(min, max)
 	for i := range got {
 		if got[i].Label == "" {
 			continue
 		}
-
-		var d int64
-		var s string
-
 		v := got[i].Value
-		switch {
-		case v > 1000*1000*1000*1000*1000*1000:
-			d = 1000 * 1000 * 1000 * 1000 * 1000 * 1000
-			s = "E"
-		case v > 1000*1000*1000*1000*1000:
-			d = 1000 * 1000 * 1000 * 1000 * 1000
-			s = "P"
-		case v > 1000*1000*1000*1000:
-			d = 1000 * 1000 * 1000 * 1000
-			s = "T"
-		case v > 1000*1000*1000:
-			d = 1000 * 1000 * 1000
-			s = "G"
-		case v > 1000*1000:
-			d = 1000 * 1000
-			s = "M"
-		case v > 1000:
-			d = 1000
-			s = "k"
-		default:
+		changed, vt, s := t.ValueTransformer(v)
+		if !changed {
 			continue
 		}
-		got[i].Label = format_short_value(v/float64(d)) + " " + s
+		got[i].Label = val_format_for_printing(vt)
+		if len(s) > 0 {
+			got[i].Label += " " + s
+		}
 	}
 	return got
 }
 
-type KibiTicker struct{}
+type NeatFloatTicker struct{}
 
-func (KibiTicker) Ticks(min, max float64) []plot.Tick {
+func (NeatFloatTicker) Ticks(min, max float64) []plot.Tick {
 	got := plot.DefaultTicks{}.Ticks(min, max)
 	for i := range got {
 		if got[i].Label == "" {
 			continue
 		}
-
-		var d int64
-		var s string
-
-		v := got[i].Value
-		switch {
-		case v > 1024*1024*1024*1024*1024*1024:
-			d = 1024 * 1024 * 1024 * 1024 * 1024 * 1024
-			s = "Ei"
-		case v > 1024*1024*1024*1024*1024:
-			d = 1024 * 1024 * 1024 * 1024 * 1024
-			s = "Pi"
-		case v > 1024*1024*1024*1024:
-			d = 1024 * 1024 * 1024 * 1024
-			s = "Ti"
-		case v > 1024*1024*1024:
-			d = 1024 * 1024 * 1024
-			s = "Gi"
-		case v > 1024*1024:
-			d = 1024 * 1024
-			s = "Mi"
-		case v > 1024:
-			d = 1024
-			s = "Ki"
-		default:
-			continue
-		}
-		got[i].Label = format_short_value(v/float64(d)) + " " + s
-
+		got[i].Label = val_format_for_printing(got[i].Value)
 	}
 	return got
 }
@@ -266,11 +279,11 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 	var y_ticker plot.Ticker
 	switch {
 	case metric.options.kilo:
-		y_ticker = KiloTicker{}
+		y_ticker = TransformerTicker{ValueTransformer: val_to_unit_prefix_base10}
 	case metric.options.kibi:
-		y_ticker = KibiTicker{}
+		y_ticker = TransformerTicker{ValueTransformer: val_to_unit_prefix_base2}
 	default:
-		y_ticker = plot.DefaultTicks{}
+		y_ticker = NeatFloatTicker{}
 	}
 	p.Y.Tick.Marker = y_ticker
 
