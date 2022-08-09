@@ -9,7 +9,7 @@ import (
 )
 
 func measure(p *params_measure) {
-	db_path := fmt.Sprintf("%s?_pragma=journal_mode(WAL)", p.db_path)
+	db_path := fmt.Sprintf("%s?_journal=WAL", p.db_path)
 	log.Println("Opening SQLite DB at ", db_path)
 	db := db_init(db_path)
 	defer func() {

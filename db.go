@@ -51,7 +51,7 @@ SELECT timestamp, value FROM %s
 }
 
 func db_init(db_path string) *sql.DB {
-	db, err := sql.Open("sqlite", db_path)
+	db, err := sql.Open("sqlite3", db_path)
 	if err != nil {
 		log.Fatalf("cannot open database: %v\n", err)
 	}
