@@ -1,6 +1,10 @@
 # Changelog
 
-## next version (YYYY-MM-DD)
+## 0.8.0 (2022-08-09)
+
+### Changes
+
+* Begin using `github.com/mattn/go-sqlite3` for SQLite
 
 ### Additions
 
