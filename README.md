@@ -287,7 +287,7 @@ metric=ping_google|PING Google|y_min=0|ping -q -w 10 -c 2 8.8.8.8|tail -1|cut -d
 #### OpenBSD
 
 ```
-metric=load_1|1 minute CPU LOAD|y_min=0|uptime|awk '{print $11}'|cut -d ',' -f1
+metric=load_1|1 minute CPU LOAD|y_min=0|uptime|grep -E -o 'averages: [\.0-9]+'|cut -d ' ' -f2
 ```
 
 ## TODO
