@@ -144,6 +144,11 @@ Below we assume that `root` is the privileged user and its primary group is
 the `#` prefix in the example commands does mean a root shell according to the
 tradition.
 
+If you wish the use non-default locations for the database or the HTML template,
+you must specify new values in your configuration file. If the path to your
+configuration file is non-default, you must specify it with the `-config-path`
+for both subcommands.
+
 1. Obtain a `lilmon` executable -- possibly `go build` is enough, see Go's
    cross-compiling instructions if you need to target different OS/arch
 
@@ -186,15 +191,12 @@ tradition.
 # sudo -u lilmon /usr/local/bin/lilmon measure
 ```
 
-8. Begin serving the monitoring interface as the `lilmon` user. Please note that
-   `lilmon serve` by default only listens on `localhost:15515`:
+8. Begin serving the monitoring interface as the `lilmon` user. Make note of the
+   `listen_addr` option in the configuration file before this.
 
 ```
-# sudo -u lilmon /usr/local/bin/lilmon serve -addr "${LISTEN_ADDR}:15515"
+# sudo -u lilmon /usr/local/bin/lilmon serve
 ```
-
-where `$LISTEN_ADDR` should be a suitable listening address or `0.0.0.0` if
-you want lilmon to listen on all addresses.
 
 9. Point your browser at the listener.
 
