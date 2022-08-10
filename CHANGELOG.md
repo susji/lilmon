@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.9.0 (2022-08-10)
+
+### Changes
+
+* All configuration is now read from the configuration file
+
+### Additions
+
+* `lilmon.ini.example` has now gained several new key-value pairs
+
 ## 0.8.0 (2022-08-09)
 
 ### Changes
