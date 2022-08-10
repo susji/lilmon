@@ -14,26 +14,14 @@ type config_serve struct {
 	width, height, max_bins                       int
 	default_period, autorefresh_period, bin_width time.Duration
 	graph_format, graph_mimetype                  string
+	listen_addr                                   string
+	path_template, path_db                        string
 }
 
 type config_measure struct {
 	retention_time, prune_db_period, measure_period time.Duration
-}
-
-type config_paths struct {
-	db_path, config_path string
-}
-
-type params_measure struct {
-	config_paths
-	shell  string
-	period time.Duration
-}
-
-type params_serve struct {
-	config_paths
-	template_path string
-	addr          string
+	path_db                                         string
+	shell                                           string
 }
 
 type metric struct {

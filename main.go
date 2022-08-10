@@ -29,8 +29,7 @@ something else to handle TLS termination for the server.`)
 }
 
 func main() {
-	var p_measure params_measure
-	var p_serve params_serve
+	var path_config string
 
 	if len(os.Args) <= 1 {
 		fmt.Printf("usage: %s [subcommand]\n", filepath.Base(os.Args[0]))
@@ -39,25 +38,20 @@ func main() {
 	}
 
 	cmd_measure := flag.NewFlagSet("measure", flag.ExitOnError)
-	cmd_measure.StringVar(&p_measure.db_path, FLAG_DB_PATH, DEFAULT_DB_PATH, HELP_DB_PATH)
-	cmd_measure.StringVar(&p_measure.config_path, FLAG_CONFIG_PATH, DEFAULT_CONFIG_PATH, HELP_CONFIG_PATH)
-	cmd_measure.StringVar(&p_measure.shell, FLAG_SHELL, DEFAULT_SHELL, HELP_SHELL)
+	cmd_measure.StringVar(&path_config, FLAG_CONFIG_PATH, DEFAULT_CONFIG_PATH, HELP_CONFIG_PATH)
 
 	cmd_serve := flag.NewFlagSet("serve", flag.ExitOnError)
-	cmd_serve.StringVar(&p_serve.db_path, FLAG_DB_PATH, DEFAULT_DB_PATH, HELP_DB_PATH)
-	cmd_serve.StringVar(&p_serve.config_path, FLAG_CONFIG_PATH, DEFAULT_CONFIG_PATH, HELP_CONFIG_PATH)
-	cmd_serve.StringVar(&p_serve.template_path, FLAG_TEMPLATE_PATH, DEFAULT_TEMPLATE_PATH, HELP_TEMPLATE_PATH)
-	cmd_serve.StringVar(&p_serve.addr, FLAG_ADDR, DEFAULT_ADDR, HELP_ADDR)
+	cmd_serve.StringVar(&path_config, FLAG_CONFIG_PATH, DEFAULT_CONFIG_PATH, HELP_CONFIG_PATH)
 
 	switch os.Args[1] {
 	case "measure":
 		cmd_measure.Parse(os.Args[2:])
 		make_sure_not_root()
-		measure(&p_measure)
+		measure(path_config)
 	case "serve":
 		cmd_serve.Parse(os.Args[2:])
 		make_sure_not_root()
-		serve(&p_serve)
+		serve(path_config)
 	case "help":
 		fmt.Println("The subcommands are:")
 		fmt.Println()

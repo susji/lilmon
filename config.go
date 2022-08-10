@@ -134,14 +134,53 @@ func (c *config) config_parse_metrics() ([]*metric, error) {
 	return metrics, nil
 }
 
+func (c *config) config_parse_common() (string, error) {
+	var path_db string
+	in_err := false
+
+	for k, pairs := range c.sections[""] {
+		for _, pair := range pairs {
+			var err error
+			switch k {
+			case "path_db":
+				path_db = pair.Value
+			default:
+				err = fmt.Errorf("%d: unrecognized config item: %s",
+					pair.Lineno, k)
+			}
+			if err != nil {
+				log.Printf("%s: invalid value: %v", k, err)
+				in_err = true
+			}
+		}
+	}
+	if in_err {
+		return "", errors.New("errors in common section")
+	}
+	if path_db == "" {
+		return "", errors.New("no database path in common section")
+	}
+	return path_db, nil
+}
+
 func (c *config) config_parse_measure() (*config_measure, error) {
 	ret := &config_measure{
 		retention_time:  DEFAULT_RETENTION_TIME,
 		prune_db_period: DEFAULT_PRUNE_PERIOD,
 		measure_period:  DEFAULT_MEASUREMENT_PERIOD,
+		path_db:         DEFAULT_DB_PATH,
+		shell:           DEFAULT_SHELL,
 	}
 
 	in_err := false
+
+	if path_db, cerr := c.config_parse_common(); cerr == nil {
+		ret.path_db = path_db
+	} else {
+		in_err = true
+		log.Println(cerr)
+	}
+
 	for k, pairs := range c.sections["measure"] {
 		for _, pair := range pairs {
 			var err error
@@ -152,6 +191,8 @@ func (c *config) config_parse_measure() (*config_measure, error) {
 				ret.prune_db_period, err = time.ParseDuration(pair.Value)
 			case "measure_period":
 				ret.measure_period, err = time.ParseDuration(pair.Value)
+			case "shell":
+				ret.shell = pair.Value
 			default:
 				err = fmt.Errorf(
 					"%d: unrecognized config item: %s",
@@ -182,9 +223,22 @@ func (c *config) config_parse_serve() (*config_serve, error) {
 
 		graph_format:   DEFAULT_GRAPH_FORMAT,
 		graph_mimetype: DEFAULT_GRAPH_MIMETYPE,
+
+		path_db:       DEFAULT_DB_PATH,
+		path_template: DEFAULT_TEMPLATE_PATH,
+
+		listen_addr: DEFAULT_ADDR,
 	}
 
 	in_err := false
+
+	if path_db, cerr := c.config_parse_common(); cerr == nil {
+		ret.path_db = path_db
+	} else {
+		in_err = true
+		log.Println(cerr)
+	}
+
 	for k, pairs := range c.sections["serve"] {
 		for _, pair := range pairs {
 			var err error
@@ -205,6 +259,10 @@ func (c *config) config_parse_serve() (*config_serve, error) {
 				ret.graph_format = pair.Value
 			case "graph_mimetype":
 				ret.graph_mimetype = pair.Value
+			case "listen_addr":
+				ret.listen_addr = pair.Value
+			case "path_template":
+				ret.path_template = pair.Value
 			default:
 				err = fmt.Errorf(
 					"%d: unrecognized config item: %s",

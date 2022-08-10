@@ -7,25 +7,14 @@ import (
 )
 
 const (
-	FLAG_DB_PATH    = "db-path"
-	DEFAULT_DB_PATH = "/var/lilmon/lilmon.sqlite"
-	HELP_DB_PATH    = "Filepath to lilmon SQLite database"
-
 	FLAG_CONFIG_PATH    = "config-path"
 	DEFAULT_CONFIG_PATH = "/etc/lilmon.ini"
 	HELP_CONFIG_PATH    = "Filepath to lilmon configuration file"
 
-	FLAG_SHELL    = "shell"
-	DEFAULT_SHELL = "/bin/sh"
-	HELP_SHELL    = "Filepath for shell to use when measuring metrics"
-
-	FLAG_ADDR    = "addr"
-	DEFAULT_ADDR = "localhost:15515"
-	HELP_ADDR    = "HTTP listening address"
-
-	FLAG_TEMPLATE_PATH    = "template-path"
+	DEFAULT_DB_PATH       = "/var/lilmon/lilmon.sqlite"
+	DEFAULT_SHELL         = "/bin/sh"
+	DEFAULT_ADDR          = "localhost:15515"
 	DEFAULT_TEMPLATE_PATH = "/etc/lilmon.template"
-	HELP_TEMPLATE_PATH    = "Filepath to monitoring page's HTML template"
 )
 
 const (

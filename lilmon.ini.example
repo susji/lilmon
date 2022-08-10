@@ -1,9 +1,14 @@
+path_db=/var/lilmon/lilmon.sqlite
+
 [measure]
 retention_time=2160h   ; how old measurements are saved (~3 months)
 prune_db_period=30m    ; how often to purge old data from db
 measure_period=15s     ; how often metrics are measured
+shell=/bin/sh
 
 [serve]
+listen_addr=localhost:15515
+path_template=/etc/lilmon.template
 default_period=1h
 graph_width=300
 graph_height=100

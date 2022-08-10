@@ -8,29 +8,30 @@ import (
 	"os/signal"
 )
 
-func measure(p *params_measure) {
-	db_path := fmt.Sprintf("%s?_journal=WAL", p.db_path)
-	log.Println("Opening SQLite DB at ", db_path)
-	db := db_init(db_path)
+func measure(path_config string) {
+	config, err := config_load(path_config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	mconfig, err := config.config_parse_measure()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	path_db := fmt.Sprintf("%s?_journal=WAL", mconfig.path_db)
+	log.Println("Opening SQLite DB at ", path_db)
+	db := db_init(path_db)
 	defer func() {
 		if err := db.Close(); err != nil {
 			log.Println("warning: error when closing database: ", err)
 		}
 	}()
 
-	config, err := config_load(p.config_path)
-	if err != nil {
-		log.Fatal(err)
-	}
 	metrics, err := config.config_parse_metrics()
 	if err != nil {
 		log.Fatal("config file reading failed, cannot proceed with measure: ", err)
 	}
-	mconfig, err := config.config_parse_measure()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	if err := db_migrate(db, metrics); err != nil {
 		log.Fatal("cannot proceed with measure: ", err)
 	}
@@ -51,5 +52,5 @@ func measure(p *params_measure) {
 	ct := make(chan db_task)
 	go db_writer(ctx, db, ct)
 	go db_pruner(ctx, ct, metrics, mconfig.retention_time, mconfig.prune_db_period)
-	run_metrics(ctx, db, mconfig.measure_period, p.shell, metrics, ct)
+	run_metrics(ctx, db, mconfig.measure_period, mconfig.shell, metrics, ct)
 }

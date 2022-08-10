@@ -9,12 +9,30 @@ import (
 	"time"
 )
 
+const (
+	PATH_CONFIG_EXAMPLE = "lilmon.ini.example"
+)
+
 var test_metrics = []*metric{
 	&metric{
 		name:        "test_metric_1",
 		description: "a simple test metric",
 		command:     `echo hello world!|wc -c`,
 	},
+}
+
+func assert(t *testing.T, cond bool, msg ...any) {
+	if cond {
+		return
+	}
+	t.Error(msg...)
+}
+
+func assertf(t *testing.T, cond bool, format string, msg ...any) {
+	if cond {
+		return
+	}
+	t.Errorf(format, msg...)
 }
 
 func almost_equals(a, b float64) bool {
@@ -282,4 +300,129 @@ func TestParseOptions(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestParseConfig(t *testing.T) {
+	c, err := config_load(PATH_CONFIG_EXAMPLE)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	mc, err := c.config_parse_measure()
+	if err != nil {
+		t.Error("measure:", err)
+	}
+
+	sc, err := c.config_parse_serve()
+	if err != nil {
+		t.Error("serve:", err)
+	}
+
+	metrics, err := c.config_parse_metrics()
+	if err != nil {
+		t.Error("metrics:", err)
+	}
+	got_metrics := 0
+	for _, m := range metrics {
+		switch m.name {
+		case "n_temp_files":
+			got_metrics |= 1
+			assertf(t,
+				m.command == `find /tmp/ -type f|wc -l`,
+				"unexpected %s command: %s", m.name, m.command)
+			assertf(t,
+				m.description == "Files in /tmp",
+				"unexpected description for %s: %s", m.name, m.description)
+			assertf(t,
+				*m.options.y_min == float64(0),
+				"unexpected y_min for %s: %v", m.name, m.options.y_min)
+			assertf(t,
+				m.options.y_max == nil,
+				"unexpected y_max for %s: %v", m.name, m.options.y_max)
+			assertf(t,
+				m.options.differentiate == false,
+				"unexpected differentiate for %s: %T", m.name, m.options.differentiate)
+			assertf(t,
+				m.options.kilo == true,
+				"unexpected kilo for %s: %v", m.name, m.options.kilo)
+			assertf(t,
+				m.options.kibi == false,
+				"unexpected kibi for %s: %v", m.name, m.options.kibi)
+
+		case "n_processes":
+			got_metrics |= 2
+			assertf(t,
+				m.command == `ps -A|wc -l`,
+				"unexpected %s command: %s", m.name, m.command)
+			assertf(t,
+				almost_equals(*m.options.y_max, float64(1000)),
+				"unexpected y_max for %s: %v", m.name, m.options.y_max)
+
+		case "rate_logged_in_users":
+			got_metrics |= 4
+			assertf(t,
+				m.command == `who|wc -l`,
+				"unexpected %s command: %s", m.name, m.command)
+			assertf(t,
+				m.options.differentiate == true,
+				"unexpected %s differentiate: %T", m.name, m.options.differentiate)
+		case "n_subshell_constant":
+			got_metrics |= 8
+			assertf(t,
+				m.command == `{ echo -n "one"; echo -n two; echo -n three; }|wc -c`,
+				"unexpected %s command: %s", m.name, m.command)
+		}
+	}
+	assert(t, got_metrics == (1+2+4+8), "missing some metrics: ", got_metrics)
+
+	assert(t,
+		mc.path_db == "/var/lilmon/lilmon.sqlite",
+		"unexpected measure path_db", mc.path_db)
+	assert(t,
+		mc.retention_time == time.Duration(2160)*time.Hour,
+		"unexpected retention_time", mc.retention_time)
+	assert(t,
+		mc.prune_db_period == time.Duration(30)*time.Minute,
+		"unexpected prune_db_period", mc.prune_db_period)
+	assert(t,
+		mc.measure_period == time.Duration(15)*time.Second,
+		"unexpected measure_period", mc.measure_period)
+	assert(t,
+		mc.shell == "/bin/sh",
+		"unexpected shell", mc.shell)
+
+	assert(t,
+		sc.path_db == "/var/lilmon/lilmon.sqlite",
+		"unexpected serve path_db", mc.path_db)
+	assert(t,
+		sc.listen_addr == "localhost:15515",
+		"unexpected listen_addr", sc.listen_addr)
+	assert(t,
+		sc.path_template == "/etc/lilmon.template",
+		"unexpected path_template", sc.path_template)
+	assert(t,
+		sc.default_period == time.Duration(1)*time.Hour,
+		"unexpected default_period", sc.default_period)
+	assert(t,
+		sc.width == 300,
+		"unexpected width", sc.width)
+	assert(t,
+		sc.height == 100,
+		"unexpected height", sc.height)
+	assert(t,
+		sc.bin_width == time.Duration(1)*time.Minute,
+		"unexpected bin_width", sc.bin_width)
+	assert(t,
+		sc.max_bins == 150,
+		"unexpected max_bins ", sc.max_bins)
+	assert(t,
+		sc.autorefresh_period == time.Duration(60)*time.Second,
+		"unexpected autorefresh_period", sc.autorefresh_period)
+	assert(t,
+		sc.graph_format == "svg",
+		"unexpected graph_format", sc.graph_format)
+	assert(t,
+		sc.graph_mimetype == "image/svg+xml",
+		"unexpected graph_mimetype", sc.graph_mimetype)
+
 }

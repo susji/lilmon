@@ -173,10 +173,9 @@ func serve_graph_gen(db *sql.DB, metrics []*metric, label string, sconfig *confi
 	}
 }
 
-func serve(p *params_serve) {
-	template := template.Must(template.ParseFiles(p.template_path))
+func serve(path_config string) {
 
-	config, err := config_load(p.config_path)
+	config, err := config_load(path_config)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -188,8 +187,9 @@ func serve(p *params_serve) {
 	if err != nil {
 		log.Fatal("parsing serve config failed: ", err)
 	}
+	template := template.Must(template.ParseFiles(sconfig.path_template))
 
-	db_path := fmt.Sprintf("%s?mode=ro", p.db_path)
+	db_path := fmt.Sprintf("%s?mode=ro", sconfig.path_db)
 	log.Println("Opening SQLite DB at ", db_path)
 	db := db_init(db_path)
 	defer func() {
@@ -199,7 +199,7 @@ func serve(p *params_serve) {
 	}()
 
 	http.HandleFunc("/", serve_index_gen(db, metrics, "index", sconfig, template))
-	http.HandleFunc("/graph", serve_graph_gen(db, metrics, "graph", sconfig))
-	log.Println("Listening at address ", p.addr)
-	http.ListenAndServe(p.addr, nil)
+	http.HandleFunc("/graph", serve_graph_gen(db, metrics, "<bgraph", sconfig))
+	log.Println("Listening at address ", sconfig.listen_addr)
+	http.ListenAndServe(sconfig.listen_addr, nil)
 }
