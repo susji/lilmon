@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strconv"
@@ -12,16 +13,10 @@ import (
 	"github.com/susji/tinyini"
 )
 
-func config_load(filepath string) (*config, error) {
-	log.Println("attempting to read settings from ", filepath)
-	f, err := os.Open(filepath)
-	if err != nil {
-		log.Println("cannot open configuration file for reading: ", err)
-		return nil, err
-	}
-	sections, errs := tinyini.Parse(f)
+func config_load(r io.Reader) (*config, error) {
+	sections, errs := tinyini.Parse(r)
 	if len(errs) != 0 {
-		log.Println("errors when reading configuration file: ", filepath)
+		log.Println("errors when reading configuration file")
 		for n, err := range errs {
 			log.Printf("[%d] %v\n", n+1, err)
 		}
@@ -30,6 +25,20 @@ func config_load(filepath string) (*config, error) {
 	return &config{
 		sections: sections,
 	}, nil
+
+}
+func config_load_file(filepath string) (*config, error) {
+	log.Println("attempting to read settings from ", filepath)
+	f, err := os.Open(filepath)
+	if err != nil {
+		log.Println("cannot open configuration file for reading: ", err)
+		return nil, err
+	}
+	c, err := config_load(f)
+	if err != nil {
+		return nil, fmt.Errorf("unable to handle configuration file %q: %w", filepath, err)
+	}
+	return c, nil
 }
 
 func config_parse_metric_options(options string) (graph_options, []error) {

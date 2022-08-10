@@ -9,7 +9,7 @@ import (
 )
 
 func measure(path_config string) {
-	config, err := config_load(path_config)
+	config, err := config_load_file(path_config)
 	if err != nil {
 		log.Fatal(err)
 	}

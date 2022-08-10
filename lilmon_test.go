@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"math"
@@ -9,9 +10,33 @@ import (
 	"time"
 )
 
-const (
-	PATH_CONFIG_EXAMPLE = "testdata/lilmon.ini_test"
-)
+var test_config = `
+path_db=/somewhere/db
+
+[measure]
+retention_time=21600h
+prune_db_period=300m
+measure_period=150s
+shell=/bin/zsh
+
+[serve]
+listen_addr=localhost:15516
+path_template=/somewhere/template
+default_period=10m
+graph_width=3000
+graph_height=1000
+bin_width=10m
+max_bins=1500
+autorefresh_period=600s
+graph_format=png
+graph_mimetype=image/png
+
+[metrics]
+metric=n_temp_files|Files in /tmp|y_min=0,kilo|find /tmp/ -type f|wc -l
+metric=n_processes|Visible processes (all users)|y_min=0,y_max=1000|ps -A|wc -l
+metric=rate_logged_in_users|Rate of user logins|deriv|who|wc -l
+metric="n_subshell_constant|Plain silly||{ echo -n \"one\"; echo -n two; echo -n three; }|wc -c"
+`
 
 var test_metrics = []*metric{
 	&metric{
@@ -303,7 +328,8 @@ func TestParseOptions(t *testing.T) {
 }
 
 func TestParseConfig(t *testing.T) {
-	c, err := config_load(PATH_CONFIG_EXAMPLE)
+	b := bytes.NewBufferString(test_config)
+	c, err := config_load(b)
 	if err != nil {
 		t.Fatal(err)
 	}
