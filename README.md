@@ -144,10 +144,10 @@ Below we assume that `root` is the privileged user and its primary group is
 the `#` prefix in the example commands does mean a root shell according to the
 tradition.
 
-If you wish the use non-default locations for the database or the HTML template,
-you must specify new values in your configuration file. If the path to your
+If you wish the non-default locations for the database or HTML template, you
+must specify new values in your configuration file. If the path to your
 configuration file is non-default, you must specify it with the `-config-path`
-for both subcommands.
+parameter. This works for both subcommands.
 
 1. Obtain a `lilmon` executable -- possibly `go build` is enough, see Go's
    cross-compiling instructions if you need to target different OS/arch
