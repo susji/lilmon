@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	PATH_CONFIG_EXAMPLE = "lilmon.ini.example"
+	PATH_CONFIG_EXAMPLE = "testdata/lilmon.ini_test"
 )
 
 var test_metrics = []*metric{
@@ -376,53 +376,53 @@ func TestParseConfig(t *testing.T) {
 	assert(t, got_metrics == (1+2+4+8), "missing some metrics: ", got_metrics)
 
 	assert(t,
-		mc.path_db == "/var/lilmon/lilmon.sqlite",
+		mc.path_db == "/somewhere/db",
 		"unexpected measure path_db", mc.path_db)
 	assert(t,
-		mc.retention_time == time.Duration(2160)*time.Hour,
+		mc.retention_time == time.Duration(21600)*time.Hour,
 		"unexpected retention_time", mc.retention_time)
 	assert(t,
-		mc.prune_db_period == time.Duration(30)*time.Minute,
+		mc.prune_db_period == time.Duration(300)*time.Minute,
 		"unexpected prune_db_period", mc.prune_db_period)
 	assert(t,
-		mc.measure_period == time.Duration(15)*time.Second,
+		mc.measure_period == time.Duration(150)*time.Second,
 		"unexpected measure_period", mc.measure_period)
 	assert(t,
-		mc.shell == "/bin/sh",
+		mc.shell == "/bin/zsh",
 		"unexpected shell", mc.shell)
 
 	assert(t,
-		sc.path_db == "/var/lilmon/lilmon.sqlite",
+		sc.path_db == "/somewhere/db",
 		"unexpected serve path_db", mc.path_db)
 	assert(t,
-		sc.listen_addr == "localhost:15515",
+		sc.listen_addr == "localhost:15516",
 		"unexpected listen_addr", sc.listen_addr)
 	assert(t,
-		sc.path_template == "/etc/lilmon.template",
+		sc.path_template == "/somewhere/template",
 		"unexpected path_template", sc.path_template)
 	assert(t,
-		sc.default_period == time.Duration(1)*time.Hour,
+		sc.default_period == time.Duration(10)*time.Minute,
 		"unexpected default_period", sc.default_period)
 	assert(t,
-		sc.width == 300,
+		sc.width == 3000,
 		"unexpected width", sc.width)
 	assert(t,
-		sc.height == 100,
+		sc.height == 1000,
 		"unexpected height", sc.height)
 	assert(t,
-		sc.bin_width == time.Duration(1)*time.Minute,
+		sc.bin_width == time.Duration(10)*time.Minute,
 		"unexpected bin_width", sc.bin_width)
 	assert(t,
-		sc.max_bins == 150,
+		sc.max_bins == 1500,
 		"unexpected max_bins ", sc.max_bins)
 	assert(t,
-		sc.autorefresh_period == time.Duration(60)*time.Second,
+		sc.autorefresh_period == time.Duration(600)*time.Second,
 		"unexpected autorefresh_period", sc.autorefresh_period)
 	assert(t,
-		sc.graph_format == "svg",
+		sc.graph_format == "png",
 		"unexpected graph_format", sc.graph_format)
 	assert(t,
-		sc.graph_mimetype == "image/svg+xml",
+		sc.graph_mimetype == "image/png",
 		"unexpected graph_mimetype", sc.graph_mimetype)
 
 }

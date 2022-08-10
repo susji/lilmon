@@ -1,0 +1,26 @@
+path_db=/somewhere/db
+
+[measure]
+retention_time=21600h   ; how old measurements are saved (~3 months)
+prune_db_period=300m    ; how often to purge old data from db
+measure_period=150s     ; how often metrics are measured
+shell=/bin/zsh
+
+[serve]
+listen_addr=localhost:15516
+path_template=/somewhere/template
+default_period=10m
+graph_width=3000
+graph_height=1000
+bin_width=10m           ; some small multiple of 'measure_period' is good
+max_bins=1500           ; some fraction of 'graph_width' is good
+autorefresh_period=600s
+graph_format=png       ; see `go doc gonum.org/v1/plot.Plot.WriterTo` for supported formats
+graph_mimetype=image/png
+
+[metrics]
+metric=n_temp_files|Files in /tmp|y_min=0,kilo|find /tmp/ -type f|wc -l
+metric=n_processes|Visible processes (all users)|y_min=0,y_max=1000|ps -A|wc -l
+metric=rate_logged_in_users|Rate of user logins|deriv|who|wc -l
+metric="n_subshell_constant|Plain silly||{ echo -n \"one\"; echo -n two; echo -n three; }|wc -c"
+
