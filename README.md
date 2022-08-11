@@ -53,7 +53,30 @@ like this:
 ![screenshot of lilmon
 UI](https://github.com/susji/lilmon/raw/main/lilmon.png "lilmon v0.x.y")
 
-## Example metrics
+## How do you configure lilmon?
+
+See [the example file](lilmon.ini.example) for inspiration. Each definition of a
+metric consists of the following four fields:
+
+    <name>|<description>|<graph-options>|<raw-shell-command>
+
+The shell command may contain `|` characters -- it will not affect configuration
+parsing.
+
+`<graph-options>` may contain the following `,` separated parameters:
+
+  - `deriv`: The time series is numerically differentiated with respect to time
+  - `y_min=<float64>`: Graph's minimum Y value
+  - `y_max=<float64>`: Graph's maximum Y value
+  - `kibi` and `kilo`: Y values are rendered with unit prefixes in base-2 or base-10, respectively
+
+`deriv` is useful if your metric is, for example, measuring transmitted or
+received bytes for a network interface. By using `deriv`, the UI will then
+display transfer rates (bytes/second) instead of bytes.
+
+`kibi` and `kilo` will make larger values much more easier to read.
+
+## Show me some example metrics!
 
 These are some metrics I use. They may fail in cases I have not thought about.
 There are many ways to obtain similar results. The primary reason for including
@@ -162,7 +185,7 @@ As all lilmon metrics are just columns in a SQLite table, they can be
 transferred outside their host of origin with relative ease. It's just not
 something I'm especially interested in.
 
-## Warning
+## Warning about user privileges
 
 Please note that lilmon executes the metrics commands as the user it is started
 as. It does not do any kind of privilege separation. If you start `lilmon
@@ -185,29 +208,6 @@ Given above, you could then configure a metric like this:
 [metrics]
 metric=n_id_chars|Characters output by privileged id|y_min=0|doas /usr/bin/id|wc -c
 ```
-
-## How do you configure lilmon?
-
-See [the example file](lilmon.ini.example) for inspiration. Each definition of a
-metric consists of the following four fields:
-
-    <name>|<description>|<graph-options>|<raw-shell-command>
-
-The shell command may contain `|` characters -- it will not affect configuration
-parsing.
-
-`<graph-options>` may contain the following `,` separated parameters:
-
-  - `deriv`: The time series is numerically differentiated with respect to time
-  - `y_min=<float64>`: Graph's minimum Y value
-  - `y_max=<float64>`: Graph's maximum Y value
-  - `kibi` and `kilo`: Y values are rendered with unit prefixes in base-2 or base-10, respectively
-
-`deriv` is useful if your metric is, for example, measuring transmitted or
-received bytes for a network interface. By using `deriv`, the UI will then
-display transfer rates (bytes/second) instead of bytes.
-
-`kibi` and `kilo` will make larger values much more easier to read.
 
 ## Can you edit the browser UI?
 
