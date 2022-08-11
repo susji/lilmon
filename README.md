@@ -82,8 +82,8 @@ metric=bytes_wifi_tx|Wifi TX|y_min=0,deriv,kilo|cat /proc/net/dev|fgrep if-name|
 #### OpenBSD
 
 ```
-metric=bytes_rx_em0|Wired RX|deriv,y_min=0,kilo|netstat -n -i -b|fgrep em0|fgrep Link|awk '{print $5}'
-metric=bytes_tx_em0|Wired TX|deriv,y_min=0,kilo|netstat -n -i -b|fgrep em0|fgrep Link|awk '{print $6}'
+metric=bytes_wired_rx|Wired RX|deriv,y_min=0,kilo|netstat -n -i -b|fgrep if-name|fgrep Link|awk '{print $5}'
+metric=bytes_wired_tx|Wired TX|deriv,y_min=0,kilo|netstat -n -i -b|fgrep if-name|fgrep Link|awk '{print $6}'
 ```
 
 ### Temperature sensor
