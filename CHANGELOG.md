@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.9.1 (2022-08-11)
+
+### Changes
+
+* Use `interface{}` in the tests instead of `any` for backwards compatibility
+* Declare Go 1.17 instead of 1.18 as the module's *minimum-go-version*
+* Refactor configuration handling for easier testing
+
+### Fixes
+
+* README: Minor improvements
+* Minor naming improvements in code
+
 ## 0.9.0 (2022-08-10)
 
 ### Changes
