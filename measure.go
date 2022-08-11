@@ -19,7 +19,7 @@ func measure(path_config string) {
 		log.Fatal(err)
 	}
 
-	path_db := fmt.Sprintf("%s?_journal=WAL", mconfig.path_db)
+	path_db := db_path_measure(mconfig.path_db)
 	log.Println("Opening SQLite DB at ", path_db)
 	db := db_init(path_db)
 	defer func() {

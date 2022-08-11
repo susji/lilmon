@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+func db_path_measure(filepath string) string {
+	return fmt.Sprintf("%s?_journal=WAL", filepath)
+}
+
 func db_table_name_get(metric *metric) string {
 	if !is_metric_name_valid(metric) {
 		panic(fmt.Sprintf("invalid metric name: %#v", metric))
@@ -61,7 +65,6 @@ func db_init(db_path string) *sql.DB {
 		log.Println("warning: unable to get sqlite version: ", err)
 	} else {
 		log.Println("database version: ", db_version)
-
 	}
 	return db
 }
@@ -72,9 +75,7 @@ CREATE TABLE IF NOT EXISTS %s (
     id INTEGER PRIMARY KEY,
     value DOUBLE PRECISION,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP);
-CREATE INDEX IF NOT EXISTS index_%s
-    ON %s (value, timestamp);
-`
+CREATE INDEX IF NOT EXISTS index_%s ON %s (value, timestamp);`
 	in_err := false
 	for n, m := range metrics {
 		log.Printf(
@@ -83,9 +84,8 @@ CREATE INDEX IF NOT EXISTS index_%s
 
 		tn := db_table_name_get(m)
 		q := fmt.Sprintf(template_table, tn, tn, tn)
-		_, err := db.Query(q)
-		if err != nil {
-			log.Printf("failed to create table for metric %s: %v ", m.name, err)
+		if _, err := db.Exec(q); err != nil {
+			log.Printf("failed to create table/index for metric %s: %v ", m.name, err)
 			in_err = true
 		}
 	}

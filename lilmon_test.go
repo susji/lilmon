@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"path/filepath"
 	"reflect"
 	"testing"
 	"time"
@@ -214,9 +215,26 @@ func TestMetricNames(t *testing.T) {
 }
 
 func TestDatabaseSmoke(t *testing.T) {
-	db := db_init(":memory:")
+	time_start := time.Now()
+
+	td := t.TempDir()
+	db := db_init(filepath.Join(td, "test.db"))
 	defer db.Close()
-	db_migrate(db, test_metrics)
+	err := db_migrate(db, test_metrics)
+	assert(t, err == nil, "cannot migrate:", err)
+
+	_, err = db.Exec(
+		fmt.Sprintf(`INSERT INTO %s (value) VALUES (?)`,
+			db_table_name_get(test_metrics[0])),
+		123)
+	assert(t, err == nil, "cannot insert:", err)
+
+	dps, err := db_datapoints_get(db, test_metrics[0], time_start, time.Now())
+	assert(t, err == nil, "cannot get datapoints:", err)
+
+	assert(t, len(dps) == 1, "unexpected amount of datapoints:", len(dps))
+	assert(t, almost_equals(dps[0].value, 123), "unexpected value in datapoint:", dps[0].value)
+
 }
 
 func TestMeasureMetric(t *testing.T) {
