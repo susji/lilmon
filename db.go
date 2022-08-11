@@ -10,7 +10,11 @@ import (
 )
 
 func db_path_measure(filepath string) string {
-	return fmt.Sprintf("%s?_journal=WAL", filepath)
+	return fmt.Sprintf("file:%s?_journal=WAL", filepath)
+}
+
+func db_path_serve(filepath string) string {
+	return fmt.Sprintf("file:%s?mode=ro", filepath)
 }
 
 func db_table_name_get(metric *metric) string {

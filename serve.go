@@ -189,7 +189,7 @@ func serve(path_config string) {
 	}
 	template := template.Must(template.ParseFiles(sconfig.path_template))
 
-	db_path := fmt.Sprintf("%s?mode=ro", sconfig.path_db)
+	db_path := db_path_serve(sconfig.path_db)
 	log.Println("Opening SQLite DB at ", db_path)
 	db := db_init(db_path)
 	defer func() {
