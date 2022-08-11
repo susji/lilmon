@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.2 (2022-08-12)
+
+### Fixes
+
+* Unbreak metric table & index creation
+
+### Changes
+
+* Test initialization against a file-backed database
+* Form fuller URI paths when opening the databaseb
+* README is again more sensible
+
 ## 0.9.1 (2022-08-11)
 
 ### Changes
