@@ -107,7 +107,7 @@ func config_parse_metric_line(line string) (*metric, error) {
 	return m, nil
 }
 
-func (c *config) config_parse_metrics() ([]*metric, error) {
+func (c *config) parse_metrics() ([]*metric, error) {
 	metrics := []*metric{}
 	in_err := false
 	for k, pairs := range c.sections["metrics"] {
@@ -143,7 +143,7 @@ func (c *config) config_parse_metrics() ([]*metric, error) {
 	return metrics, nil
 }
 
-func (c *config) config_parse_common() (string, error) {
+func (c *config) parse_common() (string, error) {
 	var path_db string
 	in_err := false
 
@@ -172,7 +172,7 @@ func (c *config) config_parse_common() (string, error) {
 	return path_db, nil
 }
 
-func (c *config) config_parse_measure() (*config_measure, error) {
+func (c *config) parse_measure() (*config_measure, error) {
 	ret := &config_measure{
 		retention_time:  DEFAULT_RETENTION_TIME,
 		prune_db_period: DEFAULT_PRUNE_PERIOD,
@@ -183,7 +183,7 @@ func (c *config) config_parse_measure() (*config_measure, error) {
 
 	in_err := false
 
-	if path_db, cerr := c.config_parse_common(); cerr == nil {
+	if path_db, cerr := c.parse_common(); cerr == nil {
 		ret.path_db = path_db
 	} else {
 		in_err = true
@@ -220,7 +220,7 @@ func (c *config) config_parse_measure() (*config_measure, error) {
 	return ret, nil
 }
 
-func (c *config) config_parse_serve() (*config_serve, error) {
+func (c *config) parse_serve() (*config_serve, error) {
 	ret := &config_serve{
 		width:  DEFAULT_GRAPH_WIDTH,
 		height: DEFAULT_GRAPH_HEIGHT,
@@ -241,7 +241,7 @@ func (c *config) config_parse_serve() (*config_serve, error) {
 
 	in_err := false
 
-	if path_db, cerr := c.config_parse_common(); cerr == nil {
+	if path_db, cerr := c.parse_common(); cerr == nil {
 		ret.path_db = path_db
 	} else {
 		in_err = true

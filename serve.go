@@ -179,11 +179,11 @@ func serve(path_config string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	metrics, err := config.config_parse_metrics()
+	metrics, err := config.parse_metrics()
 	if err != nil {
 		log.Fatal("config file reading failed, cannot proceed with serve: ", err)
 	}
-	sconfig, err := config.config_parse_serve()
+	sconfig, err := config.parse_serve()
 	if err != nil {
 		log.Fatal("parsing serve config failed: ", err)
 	}

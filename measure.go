@@ -14,7 +14,7 @@ func measure(path_config string) {
 		log.Fatal(err)
 	}
 
-	mconfig, err := config.config_parse_measure()
+	mconfig, err := config.parse_measure()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -28,7 +28,7 @@ func measure(path_config string) {
 		}
 	}()
 
-	metrics, err := config.config_parse_metrics()
+	metrics, err := config.parse_metrics()
 	if err != nil {
 		log.Fatal("config file reading failed, cannot proceed with measure: ", err)
 	}

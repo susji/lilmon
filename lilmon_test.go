@@ -334,17 +334,17 @@ func TestParseConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	mc, err := c.config_parse_measure()
+	mc, err := c.parse_measure()
 	if err != nil {
 		t.Error("measure:", err)
 	}
 
-	sc, err := c.config_parse_serve()
+	sc, err := c.parse_serve()
 	if err != nil {
 		t.Error("serve:", err)
 	}
 
-	metrics, err := c.config_parse_metrics()
+	metrics, err := c.parse_metrics()
 	if err != nil {
 		t.Error("metrics:", err)
 	}
