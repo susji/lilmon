@@ -2,9 +2,9 @@
 
 ## What is it?
 
-lilmon is a small program for collecting and displaying numeric values as time
-series graphs in a browser view. If you stretch the definition a bit, it is a
-monitoring tool.
+lilmon is a small program for collecting numeric values on your UNIX-like system
+and displaying them as time series in a browser view. If you stretch the
+definition a bit, it is a minimalistic monitoring tool.
 
 lilmon is currently very experimental software.
 
