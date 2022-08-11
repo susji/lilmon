@@ -130,6 +130,17 @@ metric=ping_google|PING Google|y_min=0|ping -q -w 10 -c 2 8.8.8.8|tail -1|cut -d
 metric=load_1|1 minute CPU LOAD|y_min=0|uptime|grep -E -o 'averages: [\.0-9]+'|cut -d ' ' -f2
 ```
 
+### Free memory
+
+#### OpenBSD
+
+For an example's sake, we go through some trouble to dig out some bytes. Perhaps
+we are lucky and `top` always prints megabytes?
+
+```
+metric=free_mem|Free memory|y_min=0,kilo|echo $((1024 * 1024 * $(top -b|egrep -o 'Free: [0-9]+'|cut -d ' ' -f2)))
+```
+
 ## Does lilmon do alerting?
 
 No. Its intended purpose is to record numeric values and display them with a
