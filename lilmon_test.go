@@ -46,14 +46,14 @@ var test_metrics = []*metric{
 	},
 }
 
-func assert(t *testing.T, cond bool, msg ...any) {
+func assert(t *testing.T, cond bool, msg ...interface{}) {
 	if cond {
 		return
 	}
 	t.Error(msg...)
 }
 
-func assertf(t *testing.T, cond bool, format string, msg ...any) {
+func assertf(t *testing.T, cond bool, format string, msg ...interface{}) {
 	if cond {
 		return
 	}
