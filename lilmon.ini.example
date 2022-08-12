@@ -1,4 +1,4 @@
-path_db=/var/lilmon/lilmon.sqlite
+path_db=/var/lilmon/db/lilmon.sqlite
 
 [measure]
 retention_time=2160h   ; how old measurements are saved (~3 months)
@@ -8,7 +8,7 @@ shell=/bin/sh
 
 [serve]
 listen_addr=localhost:15515
-path_template=/etc/lilmon.template
+path_template=/etc/lilmon/lilmon.template
 default_period=1h
 graph_width=300
 graph_height=100

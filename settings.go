@@ -8,13 +8,13 @@ import (
 
 const (
 	FLAG_CONFIG_PATH    = "config-path"
-	DEFAULT_CONFIG_PATH = "/etc/lilmon.ini"
+	DEFAULT_CONFIG_PATH = "/etc/lilmon/lilmon.ini"
 	HELP_CONFIG_PATH    = "Filepath to lilmon configuration file"
 
-	DEFAULT_DB_PATH       = "/var/lilmon/lilmon.sqlite"
+	DEFAULT_DB_PATH       = "/var/lilmon/db/lilmon.sqlite"
 	DEFAULT_SHELL         = "/bin/sh"
 	DEFAULT_ADDR          = "localhost:15515"
-	DEFAULT_TEMPLATE_PATH = "/etc/lilmon.template"
+	DEFAULT_TEMPLATE_PATH = "/etc/lilmon/lilmon.template"
 )
 
 const (
