@@ -215,78 +215,29 @@ Yes, just use [the example as basis](lilmon.template.example) and have at it.
 
 ## What is required to run lilmon?
 
-**NOTE**: lilmon is currently very experimental software and it is not packaged
-in any manner. Your usage experience will be mildly tedious. I will fix this in
-near future.
+**NOTE**: lilmon is currently **very experimental software** and it is not yet
+packaged in any reasonable manner. Your usage experience will be mildly tedious.
+Before trying to perform an install with the attached `Makefile`, convince
+yourself that it is doing the right thing. At this stage, performing a manual
+install may be a better idea.
 
-These manual steps should be roughly enough to run lilmon experimentally in
-whatever UNIX-like environment is supported by the Go toolchain. Please note
-that the pure-Go SQLite library also sets some limitations for platform support.
-
-Below we assume GNU/Linux, so please note any differences for *BSD. As mentioned
-above, please do not run lilmon as root or any other unnecessarily privileged
-user.
-
-Below we assume that `root` is the privileged user and its primary group is
-`root`. The group could be something else, too, like `wheel`. Please note that
-the `#` prefix in the example commands does mean a root shell according to the
-tradition.
-
-If you wish to use non-default locations for the database or HTML template, you
-must specify new values in your configuration file. If the path to your
-configuration file is non-default, you must specify it with the `-config-path`
-parameter. This works for both subcommands.
-
-1. Obtain a `lilmon` executable -- possibly `go build` is enough, see Go's
-   cross-compiling instructions if you need to target different OS/arch
-
-2. Install the binary on your target machine:
+The installation is for the most part condensed into `make install`, but the
+creation of the non-privileged user is platform-dependent. We also must give
+that user a chance to write its database in the directory. For GNU/Linux it
+looks like this
 
 ```
-# install -m 0755 -o root -g root lilmon /usr/local/bin
-```
-
-3. Create `/etc/lilmon.ini` -- use [the example file](lilmon.ini.example) as
-   basis and make sure it is writable only by privileged users. Probably this
-   means it should be owned by `root:root` or something similar.
-
-```
-# install -T -m 0644 -o root -g root lilmon.ini.example /etc/lilmon.ini
-```
-
-4. Copy the browser UI's HTML template to a privileged directory:
-
-```
-# install -T -m 0644 -o root -g root lilmon.template.example /etc/lilmon.template
-```
-
-5. Create a new non-privileged system user and group for lilmon:
-
-```
+# make install
 # adduser --disabled-login --system --no-create-home --group lilmon
+# chown lilmon:lilmon /var/lilmon/db
 ```
 
-6. Create a directory suitable for storing the lilmon database:
-
-```
-# mkdir /var/lilmon
-# chown lilmon:lilmon /var/lilmon
-```
-
-7. Begin measuring as the `lilmon` user:
-
-```
-# sudo -u lilmon /usr/local/bin/lilmon measure
-```
-
-8. Begin serving the monitoring interface as the `lilmon` user. Make note of the
-   `listen_addr` option in the configuration file before this.
-
-```
-# sudo -u lilmon /usr/local/bin/lilmon serve
-```
-
-9. Point your browser at the listener.
+Please note that by default `lilmon serve` listens only on localhost. You may
+want to set the listening adress to something else such as a suitable
+interface's IP. If you want it to listen on all interfaces, use `0.0.0.0:15515`
+but please do not expose the lilmon interface it to any untrusted networks.
+As suggested below, you may in any case wish to provide the actual access via a
+suitable reverse proxy.
 
 ## Do I need timeouts for my commands?
 
