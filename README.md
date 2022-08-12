@@ -235,8 +235,8 @@ looks like this
 Please note that by default `lilmon serve` listens only on localhost. You may
 want to set the listening adress to something else such as a suitable
 interface's IP. If you want it to listen on all interfaces, use `0.0.0.0:15515`
-but please do not expose the lilmon interface it to any untrusted networks.
-As suggested below, you may in any case wish to provide the actual access via a
+but please do not expose the lilmon browser view to any untrusted networks. As
+suggested below, you may in any case wish to provide the actual access via a
 suitable reverse proxy.
 
 ## Do I need timeouts for my commands?
