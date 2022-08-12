@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.10.0 (2022-08-12)
+
+### Additions
+
+* Add `Makefile` to document installation and building
+
+### Changes
+
+* Change default configuration directory to `/etc/lilmon` instead of `/etc`
+* Change default database directory to `/var/lilmon/db` instead of `/var/lilmon`
+* Update README regarding installation
+
 ## 0.9.2 (2022-08-12)
 
 ### Fixes
