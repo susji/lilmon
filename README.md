@@ -179,6 +179,11 @@ No.
 ~~Yes. I'll probably make them less terrible in future.~~
 Much better now, right?
 
+## How to proceed after changing the metrics in the configuration file?
+
+Restart both processes but do restart `lilmon measure` first. It is responsible
+for creating new database tables and their indexes for new or renamed metrics.
+
 ## Will lilmon support monitoring more than one machine?
 
 As all lilmon metrics are just columns in a SQLite table, they can be
@@ -230,14 +235,21 @@ looks like this
 # make install
 # adduser --disabled-login --system --no-create-home --group lilmon
 # chown lilmon:lilmon /var/lilmon/db
+# sudo -u lilmon /usr/local/bin/lilmon measure
+# sudo -u lilmon /usr/local/bin/lilmon serve
 ```
 
-Please note that by default `lilmon serve` listens only on localhost. You may
-want to set the listening adress to something else such as a suitable
-interface's IP. If you want it to listen on all interfaces, use `0.0.0.0:15515`
-but please do not expose the lilmon browser view to any untrusted networks. As
-suggested below, you may in any case wish to provide the actual access via a
-suitable reverse proxy.
+When you are starting lilmon fresh without a pre-existing database, the first
+run of `lilmon measure` will create it. As `lilmon serve` opens the database in
+a read-only mode, it cannot initialize the database. Thus make sure have
+successfully ran `measure` at least once before running `serve`.
+
+Also note that by default `lilmon serve` listens only on localhost. You may want
+to set the listening adress to something else such as a suitable interface's IP.
+If you want it to listen on all interfaces, use `0.0.0.0:15515` but please do
+not expose the lilmon browser view to any untrusted networks. As suggested
+below, you may in any case wish to provide the actual access via a suitable
+reverse proxy.
 
 ## Do I need timeouts for my commands?
 
