@@ -190,6 +190,15 @@ As all lilmon metrics are just columns in a SQLite table, they can be
 transferred outside their host of origin with relative ease. It's just not
 something I'm especially interested in.
 
+## How do I access the values lilmon has gathered?
+
+Make sure you have `sqlite3` installed and do something like
+
+    $ sqlite3 'file:/var/lilmon/db/lilmon.db?mode=ro' \
+          'SELECT * FROM lilmon_metric_METRIC_NAME'
+
+Note the `mode=ro` part for read-only.
+
 ## Warning about user privileges
 
 Please note that lilmon executes the metrics commands as the user it is started
