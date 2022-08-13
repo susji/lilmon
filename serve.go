@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"time"
@@ -189,6 +190,13 @@ func serve(path_config string) {
 	}
 	template := template.Must(template.ParseFiles(sconfig.path_template))
 
+	if _, err := os.Stat(sconfig.path_db); err != nil {
+		log.Println("Cannot open database:", err)
+		log.Println(
+			"Are you sure you have run `lilmon measure` first " +
+				"which also initializes the database?")
+		os.Exit(5)
+	}
 	db_path := db_path_serve(sconfig.path_db)
 	log.Println("Opening SQLite DB at ", db_path)
 	db := db_init(db_path)
