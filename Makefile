@@ -1,3 +1,7 @@
+#
+# This Makefile is GNU style, and the lack of uppercase `PREFIX` may surprised
+# BSD make environments.
+#
 SRC := config.go db.go graph.go main.go measure.go metrics.go serve.go	\
 	settings.go types.go
 
@@ -14,15 +18,24 @@ bindir ?= $(exec_prefix)/bin
 sysconfdir ?= /etc
 localstatedir ?= /var
 
+.PHONY: all
+all: lilmon
+
 lilmon: $(SRC)
 	$(GO) build -o lilmon .
 
+.PHONY: clean
 clean:
 	rm -f lilmon
 
+.PHONY: check
+check: test
+
+.PHONY: test
 test:
 	$(GO) test
 
+.PHONY: install
 install: lilmon lilmon.ini.example lilmon.template.example
 	$(MKDIR_P) $(DESTDIR)$(bindir)
 	$(MKDIR_P) $(DESTDIR)$(sysconfdir)/lilmon
