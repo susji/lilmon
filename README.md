@@ -142,7 +142,7 @@ details. Something like the `timeout` command is available on many platforms,
 and it works well for making sure programs time out.
 
 ```
-metric=ping_google|PING Google|y_min=0|ping -q -w 10 -c 2 8.8.8.8|tail -1|cut -d'=' -f2|cut -d '/' -f2
+metric=ping_google|PING Google|y_min=0,kilo|ping -q -w 10 -c 2 8.8.8.8|tail -1|cut -d'=' -f2|cut -d '/' -f2
 ```
 
 ### System load (1 min)
@@ -176,7 +176,7 @@ For details, see the next question.
 First make sure you have `sqlite3` installed. Then you can do something like
 the following to get the 10 latest measurements for metric `METRIC_NAME`.
 
-    $ sqlite3 'file:/var/lilmon/db/lilmon.db?mode=ro' \
+    $ sqlite3 'file:/var/lilmon/db/lilmon.sqlite?mode=ro' \
           'SELECT * FROM lilmon_metric_METRIC_NAME ORDER BY timestamp DESC LIMIT 10'
 
 Note the `mode=ro` part for read-only.
