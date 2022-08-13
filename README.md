@@ -169,6 +169,17 @@ metric=free_mem|Free memory|y_min=0,kilo|echo $((1024 * 1024 * $(top -b|egrep -o
 No. Its intended purpose is to record numeric values and display them with a
 bare bones UI. However, as everything is recorded into a SQLite database, a
 different program can easily follow the metrics and do alerting based on that.
+For details, see the next question.
+
+## How do I access the values lilmon has gathered?
+
+First make sure you have `sqlite3` installed. Then you can do something like
+the following to get the 10 latest measurements for metric `METRIC_NAME`.
+
+    $ sqlite3 'file:/var/lilmon/db/lilmon.db?mode=ro' \
+          'SELECT * FROM lilmon_metric_METRIC_NAME ORDER BY timestamp DESC LIMIT 10'
+
+Note the `mode=ro` part for read-only.
 
 ## Will lilmon have a configuration UI?
 
@@ -178,6 +189,12 @@ No.
 
 ~~Yes. I'll probably make them less terrible in future.~~
 Much better now, right?
+
+## `lilmon serve` refuses to start and says it cannot open the database!
+
+Are you running `serve` without a pre-existing database? In that case, you will
+have to start `lilmon measure` first because it will create the missing
+database.
 
 ## How to proceed after changing the metrics in the configuration file?
 
@@ -189,16 +206,6 @@ for creating new database tables and their indexes for new or renamed metrics.
 As all lilmon metrics are just columns in a SQLite table, they can be
 transferred outside their host of origin with relative ease. It's just not
 something I'm especially interested in.
-
-## How do I access the values lilmon has gathered?
-
-First make sure you have `sqlite3` installed. Then you can do something like
-the following to get the 10 latest measurements for metric `METRIC_NAME`.
-
-    $ sqlite3 'file:/var/lilmon/db/lilmon.db?mode=ro' \
-          'SELECT * FROM lilmon_metric_METRIC_NAME ORDER BY timestamp DESC LIMIT 10'
-
-Note the `mode=ro` part for read-only.
 
 ## Warning about user privileges
 
