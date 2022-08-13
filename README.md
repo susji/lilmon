@@ -192,10 +192,11 @@ something I'm especially interested in.
 
 ## How do I access the values lilmon has gathered?
 
-Make sure you have `sqlite3` installed and do something like
+First make sure you have `sqlite3` installed. Then you can do something like
+the following to get the 10 latest measurements for metric `METRIC_NAME`.
 
     $ sqlite3 'file:/var/lilmon/db/lilmon.db?mode=ro' \
-          'SELECT * FROM lilmon_metric_METRIC_NAME'
+          'SELECT * FROM lilmon_metric_METRIC_NAME ORDER BY timestamp DESC LIMIT 10'
 
 Note the `mode=ro` part for read-only.
 
