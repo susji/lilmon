@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.10.1 (2022-08-13)
+
+### Fixes
+
+* `lilmon serve` will now refuse to start if it cannot `Stat` the database file
+* `Makefile` is now `.PHONY` correct and we are explicit about its GNU style
+
+### Changes
+
+* README improvements
+
 ## 0.10.0 (2022-08-12)
 
 ### Additions
