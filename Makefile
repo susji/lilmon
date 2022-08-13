@@ -1,6 +1,6 @@
 #
-# This Makefile is GNU style, and the lack of uppercase `PREFIX` may surprised
-# BSD make environments.
+# This Makefile is GNU-style, and the lack of uppercase `PREFIX` may surprise
+# BSD-style build environments.
 #
 SRC := config.go db.go graph.go main.go measure.go metrics.go serve.go	\
 	settings.go types.go
