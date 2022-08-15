@@ -1,13 +1,8 @@
-name: Go
+name: Run small and big tests
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+on: push
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
@@ -23,3 +18,9 @@ jobs:
 
     - name: Test
       run: go test -v ./...
+
+    - name: Install sqlite3
+      run: sudo apt install -y sqlite3
+
+    - name: Run measurement system test
+      run: sh test_measure.sh
