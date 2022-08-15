@@ -6,6 +6,10 @@
 
 * `Stat` template before opening and panicking
 
+### Additions
+
+* `test_measure.sh` for running a short system test for measuring
+
 ## 0.10.1 (2022-08-13)
 
 ### Fixes
