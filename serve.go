@@ -8,13 +8,8 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"regexp"
 	"strconv"
 	"time"
-)
-
-var (
-	RE_TIME_RANGE_LAST = regexp.MustCompile(`^last-([0-9]+(\.[0-9]+)?)h$`)
 )
 
 func determine_timestamp_format(time_start, time_end time.Time) string {
