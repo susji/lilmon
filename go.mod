@@ -3,7 +3,7 @@ module github.com/susji/lilmon
 go 1.17
 
 require (
-	github.com/mattn/go-sqlite3 v1.14.12
+	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/susji/tinyini v0.5.0
 	gonum.org/v1/plot v0.11.0
 )
