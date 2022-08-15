@@ -188,10 +188,13 @@ func serve(path_config string) {
 	if err != nil {
 		log.Fatal("parsing serve config failed: ", err)
 	}
+	if _, err := os.Stat(sconfig.path_template); err != nil {
+		log.Fatal("cannot open template: ", err)
+	}
 	template := template.Must(template.ParseFiles(sconfig.path_template))
 
 	if _, err := os.Stat(sconfig.path_db); err != nil {
-		log.Println("Cannot open database:", err)
+		log.Println("Cannot open database: ", err)
 		log.Println(
 			"Are you sure you have run `lilmon measure` first " +
 				"which also initializes the database?")
