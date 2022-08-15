@@ -1,5 +1,11 @@
 # Changelog
 
+## next version (YYYY-MM-DD)
+
+### Fixes
+
+* `Stat` template before opening and panicking
+
 ## 0.10.1 (2022-08-13)
 
 ### Fixes
