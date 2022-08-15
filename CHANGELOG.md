@@ -1,6 +1,6 @@
 # Changelog
 
-## next version (YYYY-MM-DD)
+## 0.10.2 (2022-08-15)
 
 ### Fixes
 
