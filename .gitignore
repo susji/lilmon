@@ -18,4 +18,4 @@
 *.db
 lilmon
 lilmon.ini
-test_measure.db*
+lilmon.testdb
