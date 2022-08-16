@@ -168,7 +168,7 @@ metric=free_mem|Free memory|y_min=0,kilo|echo $((1024 * 1024 * $(top -b|egrep -o
 
 Note that this invocation probably requires privileged execution. See the
 discussion regarding `sudo` and `doas`. This command also assumes that there is
-only one station or that the station of interested has index `0`.
+only one station or that the station of interest has index `0`.
 
 ```
 metric=n_sta|hostapd clients|y_min=0|sudo /usr/sbin/hostapd_cli status|fgrep 'num_sta[0]'|cut -d '=' -f 2
