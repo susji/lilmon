@@ -1,8 +1,14 @@
 #!/bin/sh
+#
+# Intended as a quick and dirty system test mostly for automated running and
+# making sure nothing important has broken. Does not clean up the lilmon process
+# if dies abruptly.
+#
 
 CONFIG=test_measure.ini
 DB="$(grep -F path_db= $CONFIG | cut -d '=' -f2)"
-WAITSECS=7
+MEASURESECS="$(grep -F measure_period= $CONFIG | cut -d '=' -f2 | tr -d 's')"
+WAITSECS=$((2 * $MEASURESECS + 1))
 
 set -eu
 
@@ -37,6 +43,7 @@ clean_db
 LMPID=$!
 echo LMPID=$LMPID
 
+echo Sleeping $WAITSECS seconds...
 sleep $WAITSECS
 echo killing $LMPID
 kill $LMPID
