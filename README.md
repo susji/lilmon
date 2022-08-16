@@ -207,17 +207,13 @@ As all lilmon metrics are just columns in a SQLite table, they can be
 transferred outside their host of origin with relative ease. It's just not
 something I'm especially interested in.
 
-## Warning about user privileges
+## How to run measurement commands which require privileged execution?
 
-Please note that lilmon executes the metrics commands as the user it is started
-as. It does not do any kind of privilege separation. If you start `lilmon
-measure` as root, your commands will be run as root. Similarly, if you start
-`lilmon serve` as a root, the browser interface will also be run as root.
+It is **not** required or recommended to run lilmon as a privileged user.
 
-It is not necessary to run either of the modes as a privileged user. For the
-measure mode, we suggest you to use `sudo`, `doas`, or something similar with
-limited capabilities to obtain privileged metrics. You would then run these
-exactly as the non-privileged ones, except through `doas` like here:
+For the measure mode, it is wiser to make use of `sudo`, `doas`, or something
+similar with limited capabilities to obtain privileged metrics. You would then
+run these exactly as the non-privileged ones, except through `doas` like here:
 
 ```
 [metrics]
