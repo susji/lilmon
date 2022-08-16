@@ -216,20 +216,41 @@ measure` as root, your commands will be run as root. Similarly, if you start
 
 It is not necessary to run either of the modes as a privileged user. For the
 measure mode, we suggest you to use `sudo`, `doas`, or something similar with
-limited capabilities to obtain privileged metrics.
+limited capabilities to obtain privileged metrics. You would then run these
+exactly as the non-privileged ones, except through `doas` like here:
 
-As an example, with `doas` you may permit the `lilmon` user to run
-`/usr/bin/id` without any arguments as `root` like this:
+```
+[metrics]
+metric=n_id_chars|Characters output by privileged id|y_min=0|doas /usr/bin/id|wc -c
+```
+
+### doas
+
+With `doas` you may permit the `lilmon` user to run `/usr/bin/id` without any
+arguments as `root` like this:
 
 ```doas
 permit nopass lilmon as root cmd /usr/bin/id args
 ```
 
-Given above, you could then configure a metric like this:
+Do note that the lone keyword `args` suffixed to the command means only
+execution without any arguments.
+
+### sudo
+
+`sudo` also permits specifying that the command can only be run without any
+arguments, however as `sudo` also supports very rich logic for specifying how
+and what commands can be run, please exercise caution, stick to simple
+definitions, and give the relevant manuals a careful read. In this example, the
+user `lilmon` is permitted to run `/usr/bin/id` without any arguments as `root`
+and without a password on all hosts where the configuration file is active:
+
+```sudo
+lilmon ALL=(root) NOPASSWD: /usr/bin/id ""
 ```
-[metrics]
-metric=n_id_chars|Characters output by privileged id|y_min=0|doas /usr/bin/id|wc -c
-```
+
+Do note that if you do not specify the `""` suffix, then the above invocation
+would permit `lilmon` to execute `/usr/bin/id` with arbitrary arguments.
 
 ## Can you edit the browser UI?
 
