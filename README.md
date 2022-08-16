@@ -164,6 +164,16 @@ we are lucky and `top` always prints megabytes?
 metric=free_mem|Free memory|y_min=0,kilo|echo $((1024 * 1024 * $(top -b|egrep -o 'Free: [0-9]+'|cut -d ' ' -f2)))
 ```
 
+### Wi-Fi clients (stations) connected to hostapd
+
+Note that this invocation probably requires privileged execution. See the
+discussion regarding `sudo` and `doas`. This command also assumes that there is
+only one station or that the station of interested has index `0`.
+
+```
+metric=n_sta|hostapd clients|y_min=0|sudo /usr/sbin/hostapd_cli status|fgrep 'num_sta[0]'|cut -d '=' -f 2
+```
+
 ## Does lilmon do alerting?
 
 No. Its intended purpose is to record numeric values and display them with a
