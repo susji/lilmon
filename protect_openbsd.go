@@ -4,19 +4,25 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"golang.org/x/sys/unix"
 )
 
 const (
-	promises     = "inet stdio rpath wpath cpath flock dns"
-	execpromises = ""
-	unveilflags  = "rw"
+	promises        = "inet stdio rpath wpath cpath tmppath flock dns"
+	execpromises    = ""
+	unveilflags_db  = "rw"
+	unveilflags_tmp = "rwc"
 )
 
 func protect_serve(path_db string) error {
-	log.Printf("unveil: path=%q, flags=%q\n", path_db, unveilflags)
-	if err := unix.Unveil(path_db, unveilflags); err != nil {
+	log.Printf("unveil database directory: path=%q, flags=%q\n", path_db, unveilflags_db)
+	if err := unix.Unveil(path_db, unveilflags_db); err != nil {
+		return err
+	}
+	log.Printf("unveil temp directory: path=%q, flags=%q\n", os.TempDir(), unveilflags_tmp)
+	if err := unix.Unveil(os.TempDir(), unveilflags_tmp); err != nil {
 		return err
 	}
 	if err := unix.UnveilBlock(); err != nil {
