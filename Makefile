@@ -2,8 +2,8 @@
 # This Makefile is GNU-style, and the lack of uppercase `PREFIX` may surprise
 # BSD-style build environments.
 #
-SRC := config.go db.go graph.go main.go measure.go metrics.go serve.go	\
-	settings.go types.go
+SRC := config.go db.go graph.go main.go measure.go metrics.go \
+       protect.go protect_openbsd.go serve.go settings.go types.go
 
 GO ?= go
 
