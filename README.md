@@ -200,6 +200,11 @@ No.
 ~~Yes. I'll probably make them less terrible in future.~~
 Much better now, right?
 
+## The graphs look too terrible!
+
+`measure` and `serve` are fairly well decoupled so an alternative UI is quite
+easy to build based on the data gathered by `measure`.
+
 ## `lilmon serve` refuses to start and says it cannot open the database!
 
 Are you running `serve` without a pre-existing database? In that case, you will
