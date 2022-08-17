@@ -4,7 +4,7 @@
 
 ### Fixes
 
-* ``Makefile` is now aware of protect
+* `Makefile` is now aware of protect
 * `unveil`: SQLite3 needs `/tmp` access
 
 ## 0.11.0 (2022-08-17)
