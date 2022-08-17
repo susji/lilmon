@@ -12,10 +12,9 @@ lilmon is currently very experimental software.
 
 I needed a small monitoring tool for my own use. I use it to monitor individual
 UNIX-like hosts. I'm looking at parameters like available diskspace, CPU load,
-network traffic, temperatures, connection quality and so on. There are very good
-and professional tools for this purpose, but I wanted something small and simple
-that requires very little setup.
-
+network performance, host temperatures, connection quality and so on. There are
+very good and professional tools for this purpose, but I wanted something small
+and simple that requires very little setup.
 
 ## What does it do?
 
