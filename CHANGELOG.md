@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.11.0 (2022-08-17)
+
+### Additions
+
+* Introduce some concept of dropping capabilities depending on platform
+  * Currently this only means OpenBSD and `pledge` and `unveil`
+  * First it will affect the `serve` mode
+  * This feature need some iteration to be robust and effective
+
+### Fixes
+
+* README improvements
+* `test_measure.sh` is slightly cleaner
+
 ## 0.10.2 (2022-08-15)
 
 ### Fixes
