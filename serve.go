@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"strconv"
 	"time"
 )
@@ -170,7 +171,6 @@ func serve_graph_gen(db *sql.DB, metrics []*metric, label string, sconfig *confi
 }
 
 func serve(path_config string) {
-
 	config, err := config_load_file(path_config)
 	if err != nil {
 		log.Fatal(err)
@@ -207,5 +207,10 @@ func serve(path_config string) {
 	http.HandleFunc("/", serve_index_gen(db, metrics, "index", sconfig, template))
 	http.HandleFunc("/graph", serve_graph_gen(db, metrics, "<bgraph", sconfig))
 	log.Println("Listening at address ", sconfig.listen_addr)
+
+	if err := protect_serve(path.Dir(sconfig.path_db)); err != nil {
+		log.Fatal("protect: ", err)
+	}
+
 	http.ListenAndServe(sconfig.listen_addr, nil)
 }

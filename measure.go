@@ -36,6 +36,10 @@ func measure(path_config string) {
 		log.Fatal("cannot proceed with measure: ", err)
 	}
 
+	if err := protect_measure(); err != nil {
+		log.Fatal("protect: ", err)
+	}
+
 	log.Println("database retention period is ", mconfig.retention_time)
 
 	ctx, cf := context.WithCancel(context.Background())
