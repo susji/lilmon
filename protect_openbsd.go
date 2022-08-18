@@ -15,7 +15,10 @@ const (
 
 	promises_measure = "stdio proc exec flock tmppath"
 
-	unveilflags_db  = "rw"
+	// `serve` may not need `c` for the database directory with SQLite, but
+	// we'll give it just in case. It may be that WAL maintenance requires
+	// this even though `serve` is using read-only access.
+	unveilflags_db  = "rwc"
 	unveilflags_tmp = "rwc"
 )
 
