@@ -10,8 +10,11 @@ import (
 )
 
 const (
-	promises        = "inet stdio rpath wpath cpath tmppath flock dns"
-	execpromises    = ""
+	promises_serve     = "inet stdio rpath wpath cpath tmppath flock dns"
+	execpromises_serve = ""
+
+	promises_measure = "stdio proc exec flock tmppath"
+
 	unveilflags_db  = "rw"
 	unveilflags_tmp = "rwc"
 )
@@ -28,13 +31,19 @@ func protect_serve(path_db string) error {
 	if err := unix.UnveilBlock(); err != nil {
 		return err
 	}
-	log.Printf("pledge: promises=%q, execpromises=%q\n", promises, execpromises)
-	if err := unix.Pledge(promises, execpromises); err != nil {
+	log.Printf("pledge: promises=%q, execpromises=%q\n", promises_serve, execpromises_serve)
+	if err := unix.Pledge(promises_serve, execpromises_serve); err != nil {
 		return err
 	}
 	return nil
 }
 
 func protect_measure() error {
+	// measure is hard to unveil, because it has to be compatible with a
+	// very rich selection of shell commands.
+	log.Printf("pledge: promises=%q\n", promises_measure)
+	if err := unix.PledgePromises(promises_measure); err != nil {
+		return err
+	}
 	return nil
 }
