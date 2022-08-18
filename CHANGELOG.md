@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.12.0 (2022-08-18)
+
+### Additions
+
+* `measure` now uses `pledge`
+
+### Changes
+
+* `serve` should, just in case, get file-creation access to DB directory
+
+### Fixes
+
+* README is again better
+
 ## 0.11.1 (2022-08-17)
 
 ### Fixes
