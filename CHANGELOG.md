@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.12.1 (2022-08-18)
+
+### Fixes
+
+* `measure` probably needs more `pledge` access for SQLite
+
 ## 0.12.0 (2022-08-18)
 
 ### Additions
