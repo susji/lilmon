@@ -13,7 +13,7 @@ const (
 	promises_serve     = "inet stdio rpath wpath cpath tmppath flock dns"
 	execpromises_serve = ""
 
-	promises_measure = "stdio proc exec flock tmppath"
+	promises_measure = "stdio proc exec flock rpath wpath cpath tmppath"
 
 	// `serve` may not need `c` for the database directory with SQLite, but
 	// we'll give it just in case. It may be that WAL maintenance requires
