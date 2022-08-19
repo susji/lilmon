@@ -80,6 +80,16 @@ display transfer rates (bytes/second) instead of bytes.
 
 `kibi` and `kilo` will make larger values much more easier to read.
 
+### What if my metric command contains `;`
+
+This will be a problem for the configuration parser because it assumes that a
+lonesome `;` begins a comment. To avoid this, quote your metric definition like
+this:
+
+```
+metric="n_subshell_constant|Plain silly||{ echo -n \"one\"; echo -n two; }|wc -c"
+```
+
 ## Show me some example metrics!
 
 These are some metrics I use. They may fail in cases I have not thought about.
