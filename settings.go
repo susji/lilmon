@@ -22,7 +22,7 @@ const (
 	DEFAULT_GRAPH_WIDTH        = 300
 	DEFAULT_GRAPH_HEIGHT       = 100
 	DEFAULT_RETENTION_TIME     = 90 * 24 * time.Hour
-	DEFAULT_REFRESH_PERIOD     = 30
+	DEFAULT_REFRESH_PERIOD     = 2 * time.Minute
 	DEFAULT_PRUNE_PERIOD       = 15 * time.Minute
 	DEFAULT_MEASUREMENT_PERIOD = 15 * time.Second
 	DEFAULT_BIN_WIDTH          = 1 * time.Minute
