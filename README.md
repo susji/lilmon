@@ -80,7 +80,7 @@ display transfer rates (bytes/second) instead of bytes.
 
 `kibi` and `kilo` will make larger values much more easier to read.
 
-### What if my metric command contains `;`
+### What if my metric command contains `;`?
 
 This will be a problem for the configuration parser because it assumes that a
 lonesome `;` begins a comment. To avoid this, quote your metric definition like
