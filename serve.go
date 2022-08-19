@@ -212,5 +212,5 @@ func serve(path_config string) {
 		log.Fatal("protect: ", err)
 	}
 
-	http.ListenAndServe(sconfig.listen_addr, nil)
+	log.Println(http.ListenAndServe(sconfig.listen_addr, nil))
 }
