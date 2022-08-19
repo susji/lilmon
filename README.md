@@ -207,8 +207,9 @@ Much better now, right?
 
 ## The graphs look too terrible!
 
-`measure` and `serve` are fairly well decoupled so an alternative UI is quite
-easy to build based on the data gathered by `measure`.
+This is enough for me. However, `measure` and `serve` are fairly well decoupled
+so an alternative UI is quite easy to build based on the data gathered by
+`measure`.
 
 ## `lilmon serve` refuses to start and says it cannot open the database!
 
