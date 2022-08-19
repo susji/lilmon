@@ -86,8 +86,9 @@ These are some metrics I use. They may fail in cases I have not thought about.
 There are many ways to obtain similar results. The primary reason for including
 these here is to give you inspiration on how to use lilmon.
 
-As is stressed elsewhere in this README, to be safer, do not run any of these as
-a privileged user.
+As is stressed elsewhere in this README, to be safer, avoid running any metrics
+as a privileged user. If greater privileges are required, use something which
+selectively gives you just enough capabilities to measure your value.
 
 ### TX & RX speed of some interface
 
