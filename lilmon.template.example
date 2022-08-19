@@ -17,7 +17,9 @@
         <a href="/?time_start=72h">3 days</a>
         <a href="/?time_start=168h">week</a>
         <a href="/?time_start=336h&time_end=168h">week before</a>
+        <a href="/?time_start=336h">2 weeks</a>
         <a href="/?time_start=720h">month</a>
+        <a href="/?time_start=2160h">3 months</a>
       </code>
     </div>
     <div>
