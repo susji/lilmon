@@ -29,10 +29,11 @@ func db_datapoints_get(db *sql.DB, metric *metric, time_start, time_end time.Tim
 
 	template_select_values := `
 SELECT timestamp, value FROM %s
-    WHERE
-        timestamp >= DATETIME(%d, 'unixepoch')
-        AND timestamp <= DATETIME(%d, 'unixepoch')
+    WHERE timestamp BETWEEN
+        DATETIME(%d, 'unixepoch') AND
+        DATETIME(%d, 'unixepoch')
     ORDER BY timestamp ASC`
+
 	q := fmt.Sprintf(
 		template_select_values,
 		db_table_name_get(metric),
