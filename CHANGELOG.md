@@ -1,5 +1,18 @@
 # Changelog
 
+## next version (YYYY-MM-DD)
+
+### Fixes
+
+* If `serve` fails on HTTP listen, it no longer fails silently
+
+### Changes
+
+* `serve` and its database queries experienced some micro-optimization
+* README is again better
+* The example template gained a few additional time ranges
+* Autorefresh default made slower (2 min)
+
 ## 0.12.1 (2022-08-18)
 
 ### Fixes
