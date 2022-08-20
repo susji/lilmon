@@ -205,7 +205,7 @@ func serve(path_config string) {
 	}()
 
 	http.HandleFunc("/", serve_index_gen(db, metrics, "index", sconfig, template))
-	http.HandleFunc("/graph", serve_graph_gen(db, metrics, "<bgraph", sconfig))
+	http.HandleFunc("/graph", serve_graph_gen(db, metrics, "graph", sconfig))
 	log.Println("Listening at address ", sconfig.listen_addr)
 
 	if err := protect_serve(path.Dir(sconfig.path_db)); err != nil {
