@@ -58,7 +58,7 @@ func run_metrics(ctx context.Context, db *sql.DB, period time.Duration, shell st
 				defer cf()
 				log.Printf(
 					"{%d} Running command %d/%d: %q\n",
-					ord, n+1, n, m.command)
+					ord, n+1, len(metrics), m.command)
 				go exec_metric(sctx, m, shell, ord, tasks)
 			}
 		}
