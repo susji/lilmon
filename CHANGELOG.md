@@ -1,6 +1,6 @@
 # Changelog
 
-## next version (YYYY-MM-DD)
+## 0.13.0 (2022-08-20)
 
 ### Fixes
 
@@ -12,6 +12,8 @@
 * README is again better
 * The example template gained a few additional time ranges
 * Autorefresh default made slower (2 min)
+* Measure less often by default
+* Draw more bins by default
 
 ## 0.12.1 (2022-08-18)
 
