@@ -1,5 +1,11 @@
 # Changelog
 
+## next version (YYYY-MM-DD)
+
+### Fixes
+
+* Minor logging issue with `measure`
+
 ## 0.13.0 (2022-08-20)
 
 ### Fixes
