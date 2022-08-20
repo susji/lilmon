@@ -24,9 +24,9 @@ const (
 	DEFAULT_RETENTION_TIME     = 90 * 24 * time.Hour
 	DEFAULT_REFRESH_PERIOD     = 2 * time.Minute
 	DEFAULT_PRUNE_PERIOD       = 15 * time.Minute
-	DEFAULT_MEASUREMENT_PERIOD = 15 * time.Second
+	DEFAULT_MEASUREMENT_PERIOD = 1 * time.Minute
 	DEFAULT_BIN_WIDTH          = 1 * time.Minute
-	DEFAULT_MAX_BINS           = DEFAULT_GRAPH_WIDTH / 2
+	DEFAULT_MAX_BINS           = DEFAULT_GRAPH_WIDTH / 1
 	DEFAULT_GRAPH_FORMAT       = "svg"
 	DEFAULT_GRAPH_MIMETYPE     = "image/svg+xml"
 	CONFIG_DELIM               = "|"
