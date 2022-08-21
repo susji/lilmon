@@ -1,6 +1,6 @@
 # Changelog
 
-## next version (YYYY-MM-DD)
+## 0.14.0 (2022-08-21)
 
 ### Changes
 
@@ -10,6 +10,20 @@
     option
   * Downscaling effect may be decreased by increasing the global option
     `downscaling_scale`
+  * This functionality will probably be at least finetuned after some testing
+* As a side-effect of the downscaling change, `measure_period` now moved in the
+  configuration file's global section
+  * Older configuration files will produce a syntax error as `measure_period`
+    used to live in the `[measure]` section
+* Miscellaneous stuff has moved under `misc`
+
+### Additions
+
+* `misc/db_fill.py` for generating some test data
+
+### Fixes
+
+* Removed garbage from graph generation log messages
 
 ## 0.13.1 (2022-08-20)
 
