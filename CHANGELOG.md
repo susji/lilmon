@@ -1,5 +1,16 @@
 # Changelog
 
+## next version (YYYY-MM-DD)
+
+### Changes
+
+* When graphing, long queries are now automatically downsampled
+  * The goal is to make graph generation much faster than it was
+  * The behavior may be turned off for individual metrics with the `no_ds`
+    option
+  * Downscaling effect may be decreased by increasing the global option
+    `downscaling_scale`
+
 ## 0.13.1 (2022-08-20)
 
 ### Fixes
