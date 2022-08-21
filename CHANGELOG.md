@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.1 (2022-08-21)
+
+### Fixes
+
+* Enforce proper values for `downscaling_scale` & clarify its usage
+* Enforce proper value for `measure_period`
+
 ## 0.14.0 (2022-08-21)
 
 ### Changes
