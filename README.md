@@ -338,13 +338,13 @@ I strongly recommend a reverse proxy for handling these things.
 
 It produces an averaged view which may contain some quantitative accuracy.
 
-#### Long answer
+### Long answer
 
 There are two basic steps: obtaining the `(timestamp, value)` pairs from the
 database and producing a binned view on them. I'm guessing there is a smarter
 way to achieve the same result with some SQL wizardry.
 
-##### Random sampling of measurements
+#### Random sampling of measurements
 
 lilmon automatically does downsampling when it thinks that the query may result
 in a large amount of samples. Here we make two assumptions:
@@ -360,7 +360,7 @@ option and the global behavior may be adjusted with the `downsampling_scale`
 option. The greater the value is, the less effect downsampling has. For details,
 see `db.go`.
 
-##### Averaging of samples to individual bins
+#### Averaging of samples to individual bins
 
 Each lilmon graph contains some amount of bins. The exact amount is defined by
 three variables:
