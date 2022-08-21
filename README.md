@@ -380,5 +380,5 @@ average of the all the values placed in the bin. For details, see `graph.go`.
 
 ## TODO
 
-- [ ] cache graphs
 - [ ] support units for smart Y labels (eg. "bytes")
+- [ ] some end-to-end testing for `serve`
