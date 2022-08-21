@@ -24,26 +24,12 @@ func db_table_name_get(metric *metric) string {
 	return fmt.Sprintf("lilmon_metric_%s", metric.name)
 }
 
-func get_oversampling(bins, scale int, measure_period time.Duration, time_start, time_end time.Time) int {
-	// `osr` means oversampling ratio. It means how many actual measurement
-	// samples we expect to find in one bin. We then use it to estimate what
-	// fraction of samples we can drop off to achieve roughly the same
-	// average result.
-	//
-	// To have some adjustability, we provide `scale` as a factor. It's
-	// essentially making our measurement period seems greater. This means
-	// increasing the scale will decrease the amount of downsampling.
-	//
-	// The reason for this effort is that this approach will keep the DB
-	// query times sensible and we expect that most of our data is "smooth"
-	// enough to survive this kind of downsampling.
-	//
-	// We also assume here silently that most of the data has been gathered
+func get_oversampling_ratio(bins int, measure_period time.Duration, time_start, time_end time.Time) int {
+	// Note: We assume here silently that most of the data has been gathered
 	// using roughly the same measurement period.
-	//
 	dt := time_end.Sub(time_start).Seconds()
 	binwidth := dt / float64(bins)
-	osr := int(binwidth / (measure_period.Seconds() * float64(scale)))
+	osr := int(binwidth / measure_period.Seconds())
 	log.Println("dt=", dt, "bins=", bins, "binwidth=", binwidth, "osr=", osr)
 	return osr
 }
@@ -63,19 +49,21 @@ SELECT timestamp, value FROM %s
 	// ds means downsampling
 	ds := ""
 	if !metric.options.no_downsample {
-		osr := get_oversampling(bins, scale, measure_period, time_start, time_end)
-		if osr >= 2 {
+		// `scale` will
+		scaled_osr := get_oversampling_ratio(bins, measure_period, time_start, time_end) / scale
+		log.Println("scaled_osr=", scaled_osr)
+		if scaled_osr >= 2 {
 			// We take the scaled multiplicative inverse of OSR and use it
 			// to drop random samples.
 			drop_abs := 10000
-			drop_rel := float64(drop_abs) / float64(osr)
+			drop_rel := drop_abs / scaled_osr
 			if drop_rel < 1 {
-				drop_rel = 1.0
+				drop_rel = 1
 			}
 			ds = fmt.Sprintf(
 				`AND (ABS(RANDOM()) %% %d) < %d`,
 				drop_abs,
-				int(drop_rel))
+				drop_rel)
 		}
 	}
 
