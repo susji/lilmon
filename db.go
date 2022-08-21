@@ -24,21 +24,68 @@ func db_table_name_get(metric *metric) string {
 	return fmt.Sprintf("lilmon_metric_%s", metric.name)
 }
 
-func db_datapoints_get(db *sql.DB, metric *metric, time_start, time_end time.Time) (
+func get_oversampling(bins, scale int, measure_period time.Duration, time_start, time_end time.Time) int {
+	// `osr` means oversampling ratio. It means how many actual measurement
+	// samples we expect to find in one bin. We then use it to estimate what
+	// fraction of samples we can drop off to achieve roughly the same
+	// average result.
+	//
+	// To have some adjustability, we provide `scale` as a factor. It's
+	// essentially making our measurement period seems greater. This means
+	// increasing the scale will decrease the amount of downsampling.
+	//
+	// The reason for this effort is that this approach will keep the DB
+	// query times sensible and we expect that most of our data is "smooth"
+	// enough to survive this kind of downsampling.
+	//
+	// We also assume here silently that most of the data has been gathered
+	// using roughly the same measurement period.
+	//
+	dt := time_end.Sub(time_start).Seconds()
+	binwidth := dt / float64(bins)
+	osr := int(binwidth / (measure_period.Seconds() * float64(scale)))
+	log.Println("dt=", dt, "bins=", bins, "binwidth=", binwidth, "osr=", osr)
+	return osr
+}
+
+func db_datapoints_get(db *sql.DB, metric *metric, scale, bins int, measure_period time.Duration, time_start, time_end time.Time) (
 	[]datapoint, error) {
 
 	template_select_values := `
 SELECT timestamp, value FROM %s
-    WHERE timestamp BETWEEN
-        DATETIME(%d, 'unixepoch') AND
-        DATETIME(%d, 'unixepoch')
+    WHERE
+        timestamp BETWEEN
+            DATETIME(%d, 'unixepoch')
+            AND DATETIME(%d, 'unixepoch')
+        %s
     ORDER BY timestamp ASC`
+
+	// ds means downsampling
+	ds := ""
+	if !metric.options.no_downsample {
+		osr := get_oversampling(bins, scale, measure_period, time_start, time_end)
+		if osr >= 2 {
+			// We take the scaled multiplicative inverse of OSR and use it
+			// to drop random samples.
+			drop_abs := 10000
+			drop_rel := float64(drop_abs) / float64(osr)
+			if drop_rel < 1 {
+				drop_rel = 1.0
+			}
+			ds = fmt.Sprintf(
+				`AND (ABS(RANDOM()) %% %d) < %d`,
+				drop_abs,
+				int(drop_rel))
+		}
+	}
 
 	q := fmt.Sprintf(
 		template_select_values,
 		db_table_name_get(metric),
 		time_start.Unix(),
-		time_end.Unix())
+		time_end.Unix(),
+		ds)
+
 	rows, err := db.Query(q)
 	if err != nil {
 		log.Println("graph_generate: unable to select rows: ", err)

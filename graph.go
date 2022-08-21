@@ -64,12 +64,14 @@ func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time,
 	time_end_epoch := time_end.Unix()
 	delta_t_bin_sec := (time_end_epoch - time_start_epoch) / bins
 	//
-	// Just histogramming, for three bins it would look like:
+	// First we place values into their bins:
 	//
 	// time_start   bin1               bin2               bin3       time_end
 	//      .------------------+------------------+------------------.
 	//      | ts1   ts2   ts3  |               ts4| ts5              |
 	//      '------------------+------------------+------------------.
+	//
+	// ... and afterwards the take an average of the in-bin-value.
 	//
 	cur_dp_i := 0
 	ts_bin_left_sec := time_start_epoch
@@ -220,27 +222,33 @@ func (NeatFloatTicker) Ticks(min, max float64) []plot.Tick {
 }
 
 func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, w io.Writer, sconfig *config_serve) error {
-	dps, err := db_datapoints_get(db, metric, time_start, time_end)
-	if err != nil {
-		log.Println("graph_generate: error from DB get: ", err)
-		return err
-	}
-
-	op := op_identity
-	if metric.options.differentiate {
-		op = op_derivative
-	}
 	// To have sensible graphs, the bin width (delta-t) should be
 	//   - equal or greater than our measurement period and
 	//   - smaller than the amount of horizontal pixels divided by some
 	//     small coefficient..
-
 	bins := int(time_end.Sub(time_start) / sconfig.bin_width)
 	if bins > sconfig.max_bins {
 		bins = sconfig.max_bins
 	}
 	if bins == 0 {
 		return errors.New("cannot graph zero bins")
+	}
+
+	t0 := time.Now()
+
+	dps, err := db_datapoints_get(
+		db, metric, sconfig.downsampling_scale, bins,
+		sconfig.measure_period, time_start, time_end)
+	if err != nil {
+		log.Println("graph_generate: error from DB get: ", err)
+		return err
+	}
+
+	t1 := time.Now()
+
+	op := op_identity
+	if metric.options.differentiate {
+		op = op_derivative
 	}
 	// Heavy lifting: obtain the binned data.
 	binned, labels, _, _ := bin_datapoints(
@@ -306,6 +314,10 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 	if err != nil {
 		return err
 	}
+
+	t2 := time.Now()
+
+	log.Println("t1-t0=", t1.Sub(t0), ", t2-t1=", t2.Sub(t1), ", t2-t0=", t2.Sub(t0))
 
 	return nil
 }

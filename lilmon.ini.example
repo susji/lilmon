@@ -1,9 +1,9 @@
 path_db=/var/lilmon/db/lilmon.sqlite
+measure_period=1m      ; how often metrics are measured
 
 [measure]
 retention_time=2160h   ; how old measurements are saved (~3 months)
 prune_db_period=30m    ; how often to purge old data from db
-measure_period=1m      ; how often metrics are measured
 shell=/bin/sh
 
 [serve]
@@ -14,6 +14,7 @@ graph_width=300
 graph_height=100
 bin_width=1m           ; some small multiple of 'measure_period' is good
 max_bins=300           ; some fraction of 'graph_width' is good
+downsampling_scale=2   ; bigger means spare more samples when downscaling
 autorefresh_period=2m
 graph_format=svg       ; see `go doc gonum.org/v1/plot.Plot.WriterTo` for supported formats
 graph_mimetype=image/svg+xml

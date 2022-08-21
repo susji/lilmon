@@ -27,6 +27,7 @@ const (
 	DEFAULT_MEASUREMENT_PERIOD = 1 * time.Minute
 	DEFAULT_BIN_WIDTH          = 1 * time.Minute
 	DEFAULT_MAX_BINS           = DEFAULT_GRAPH_WIDTH / 1
+	DEFAULT_DOWNSAMPLING_SCALE = 2
 	DEFAULT_GRAPH_FORMAT       = "svg"
 	DEFAULT_GRAPH_MIMETYPE     = "image/svg+xml"
 	CONFIG_DELIM               = "|"

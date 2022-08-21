@@ -13,11 +13,11 @@ import (
 
 var test_config = `
 path_db=/somewhere/db
+measure_period=150s
 
 [measure]
 retention_time=21600h
 prune_db_period=300m
-measure_period=150s
 shell=/bin/zsh
 
 [serve]
@@ -27,6 +27,7 @@ default_period=10m
 graph_width=3000
 graph_height=1000
 bin_width=10m
+downsampling_scale=3
 max_bins=1500
 autorefresh_period=600s
 graph_format=png
@@ -40,10 +41,13 @@ metric="n_subshell_constant|Plain silly||{ echo -n \"one\"; echo -n two; echo -n
 `
 
 var test_metrics = []*metric{
-	&metric{
+	{
 		name:        "test_metric_1",
 		description: "a simple test metric",
 		command:     `echo hello world!|wc -c`,
+		options: graph_options{
+			no_downsample: true,
+		},
 	},
 }
 
@@ -71,36 +75,36 @@ func TestBinDatapoints(t *testing.T) {
 
 	dps := []datapoint{
 		// FIRST BIN BEGINS
-		datapoint{
+		{
 			ts:    ta.Add(5 * time.Minute),
 			value: 10,
 		},
-		datapoint{
+		{
 			ts:    ta.Add(10 * time.Minute),
 			value: 20,
 		},
-		datapoint{
+		{
 			ts:    ta.Add(10 * time.Minute),
 			value: 0,
 		},
 		// SECOND BIN BEGINS
-		datapoint{
+		{
 			ts:    ta.Add(16 * time.Minute),
 			value: 100,
 		},
 		// THIRD BIN BEGINS
 		// FOURTH BIN BEGINS
-		datapoint{
+		{
 			ts:    ta.Add(57 * time.Minute),
 			value: -10,
 		},
-		datapoint{
+		{
 			ts:    ta.Add(59*time.Minute + 59*time.Second),
 			value: 20,
 		},
 
 		// PAST LAST BIN
-		datapoint{
+		{
 			ts:    ta.Add(61 * time.Minute),
 			value: 100000,
 		},
@@ -229,7 +233,8 @@ func TestDatabaseSmoke(t *testing.T) {
 		123)
 	assert(t, err == nil, "cannot insert:", err)
 
-	dps, err := db_datapoints_get(db, test_metrics[0], time_start, time.Now())
+	dps, err := db_datapoints_get(
+		db, test_metrics[0], 1, 300, time.Duration(1)*time.Second, time_start, time.Now())
 	assert(t, err == nil, "cannot get datapoints:", err)
 
 	assert(t, len(dps) == 1, "unexpected amount of datapoints:", len(dps))
@@ -321,8 +326,8 @@ func TestParseOptions(t *testing.T) {
 			want: graph_options{kibi: true},
 		},
 		{
-			give: "kilo",
-			want: graph_options{kilo: true},
+			give: "kilo,no_ds",
+			want: graph_options{kilo: true, no_downsample: true},
 		},
 		{
 			give: "y_min=-10, y_max = 20.5 ",
@@ -468,5 +473,10 @@ func TestParseConfig(t *testing.T) {
 	assert(t,
 		sc.graph_mimetype == "image/png",
 		"unexpected graph_mimetype", sc.graph_mimetype)
-
+	assert(t,
+		sc.measure_period == time.Duration(150)*time.Second,
+		"unexpected serve measure_period", sc.measure_period)
+	assert(t,
+		time.Duration(sc.downsampling_scale) == 3,
+		"unexpected downsampling_scale", sc.downsampling_scale)
 }

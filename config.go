@@ -76,6 +76,8 @@ func config_parse_metric_options(options string) (graph_options, []error) {
 				errs = append(errs, fmt.Errorf("bad y_max value: %w", err))
 			}
 			ret.y_max = &val
+		case "no_ds":
+			ret.no_downsample = true
 		default:
 			errs = append(errs, fmt.Errorf("unrecognized graph option: %s", key))
 		}
@@ -143,8 +145,10 @@ func (c *config) parse_metrics() ([]*metric, error) {
 	return metrics, nil
 }
 
-func (c *config) parse_common() (string, error) {
+func (c *config) parse_common() (string, time.Duration, error) {
 	var path_db string
+	measure_period := DEFAULT_MEASUREMENT_PERIOD
+
 	in_err := false
 
 	for k, pairs := range c.sections[""] {
@@ -153,6 +157,8 @@ func (c *config) parse_common() (string, error) {
 			switch k {
 			case "path_db":
 				path_db = pair.Value
+			case "measure_period":
+				measure_period, err = time.ParseDuration(pair.Value)
 			default:
 				err = fmt.Errorf("%d: unrecognized config item: %s",
 					pair.Lineno, k)
@@ -164,27 +170,28 @@ func (c *config) parse_common() (string, error) {
 		}
 	}
 	if in_err {
-		return "", errors.New("errors in common section")
+		return "", time.Duration(0), errors.New("errors in common section")
 	}
 	if path_db == "" {
-		return "", errors.New("no database path in common section")
+		return "", time.Duration(0), errors.New("no database path in common section")
 	}
-	return path_db, nil
+	return path_db, measure_period, nil
 }
 
 func (c *config) parse_measure() (*config_measure, error) {
 	ret := &config_measure{
 		retention_time:  DEFAULT_RETENTION_TIME,
 		prune_db_period: DEFAULT_PRUNE_PERIOD,
-		measure_period:  DEFAULT_MEASUREMENT_PERIOD,
 		path_db:         DEFAULT_DB_PATH,
 		shell:           DEFAULT_SHELL,
 	}
 
 	in_err := false
 
-	if path_db, cerr := c.parse_common(); cerr == nil {
+	if path_db, measure_period, cerr := c.parse_common(); cerr == nil {
 		ret.path_db = path_db
+		ret.measure_period = measure_period
+
 	} else {
 		in_err = true
 		log.Println(cerr)
@@ -198,8 +205,6 @@ func (c *config) parse_measure() (*config_measure, error) {
 				ret.retention_time, err = time.ParseDuration(pair.Value)
 			case "prune_db_period":
 				ret.prune_db_period, err = time.ParseDuration(pair.Value)
-			case "measure_period":
-				ret.measure_period, err = time.ParseDuration(pair.Value)
 			case "shell":
 				ret.shell = pair.Value
 			default:
@@ -229,6 +234,7 @@ func (c *config) parse_serve() (*config_serve, error) {
 		autorefresh_period: DEFAULT_REFRESH_PERIOD,
 		bin_width:          DEFAULT_BIN_WIDTH,
 		max_bins:           DEFAULT_MAX_BINS,
+		downsampling_scale: DEFAULT_DOWNSAMPLING_SCALE,
 
 		graph_format:   DEFAULT_GRAPH_FORMAT,
 		graph_mimetype: DEFAULT_GRAPH_MIMETYPE,
@@ -241,8 +247,9 @@ func (c *config) parse_serve() (*config_serve, error) {
 
 	in_err := false
 
-	if path_db, cerr := c.parse_common(); cerr == nil {
+	if path_db, measure_period, cerr := c.parse_common(); cerr == nil {
 		ret.path_db = path_db
+		ret.measure_period = measure_period
 	} else {
 		in_err = true
 		log.Println(cerr)
@@ -264,6 +271,8 @@ func (c *config) parse_serve() (*config_serve, error) {
 				ret.bin_width, err = time.ParseDuration(pair.Value)
 			case "max_bins":
 				ret.max_bins, err = strconv.Atoi(pair.Value)
+			case "downsampling_scale":
+				ret.downsampling_scale, err = strconv.Atoi(pair.Value)
 			case "graph_format":
 				ret.graph_format = pair.Value
 			case "graph_mimetype":

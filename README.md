@@ -70,6 +70,7 @@ parsing.
 `<graph-options>` may contain the following `,` separated parameters:
 
   - `deriv`: The time series is numerically differentiated with respect to time
+  - `no_ds`: The time series is not downsampled at all
   - `y_min=<float64>`: Graph's minimum Y value
   - `y_max=<float64>`: Graph's maximum Y value
   - `kibi` and `kilo`: Y values are rendered with unit prefixes in base-2 or base-10, respectively
@@ -77,6 +78,12 @@ parsing.
 `deriv` is useful if your metric is, for example, measuring transmitted or
 received bytes for a network interface. By using `deriv`, the UI will then
 display transfer rates (bytes/second) instead of bytes.
+
+`no_ds` may be useful if you want to produce an exact averaging of some metric's
+data. For example, if your data may contain abrupt changes in individual
+measurements and you want to be sure they are included when the time series is
+being binned, then you should enable `no_ds`. Do note that this makes the
+generation of the specific graph considerably slower.
 
 `kibi` and `kilo` will make larger values much more easier to read.
 
@@ -324,6 +331,47 @@ It does not hurt, but lilmon tries to cancel measurement commands which take
 ## What about TLS, rate limiting, authentication...?
 
 I strongly recommend a reverse proxy for handling these things.
+
+## How does lilmon treat the data when time series are produced?
+
+### Short answer
+
+It produces an averaged view which may contain some quantitative accuracy.
+
+#### Long answer
+
+There are two basic steps: obtaining the `(timestamp, value)` pairs from the
+database and producing a binned view on them. I'm guessing there is a smarter
+way to achieve the same result with some SQL wizardry.
+
+##### Random sampling of measurements
+
+lilmon automatically does downsampling when it thinks that the query may result
+in a large amount of samples. Here we make two assumptions:
+
+1. Measurements are evenly distributed
+2. Neglecting individual samples at random is OK
+
+In practice we use SQLite's `RANDOM()` to produce a coinflip when samples are
+`SELECT`ed from the metric tables.
+
+The behavior can be turned off for individual metrics with the `no_ds` graphing
+option and the global behavior may be adjusted with the `downsampling_scale`
+option. The greater the value is, the less effect downsampling has. For details,
+see `db.go`.
+
+##### Averaging of samples to individual bins
+
+Each lilmon graph contains some amount of bins. The exact amount is defined by
+three variables:
+
+1. graph time range (from user)
+2. bin width (from configuration)
+3. maximum amount of bins (from configuration)
+
+In the first step, we collected a bunch of samples and the here in the second
+step we distribute them among the bins. The resulting bin value is then an
+average of the all the values placed in the bin. For details, see `graph.go`.
 
 ## Known limitations
 

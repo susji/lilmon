@@ -11,11 +11,11 @@ type config struct {
 }
 
 type config_serve struct {
-	width, height, max_bins                       int
-	default_period, autorefresh_period, bin_width time.Duration
-	graph_format, graph_mimetype                  string
-	listen_addr                                   string
-	path_template, path_db                        string
+	width, height, max_bins, downsampling_scale                   int
+	default_period, autorefresh_period, measure_period, bin_width time.Duration
+	graph_format, graph_mimetype                                  string
+	listen_addr                                                   string
+	path_template, path_db                                        string
 }
 
 type config_measure struct {
@@ -32,6 +32,7 @@ type metric struct {
 type graph_options struct {
 	differentiate bool
 	kibi, kilo    bool
+	no_downsample bool
 	y_min, y_max  *float64
 }
 
