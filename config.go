@@ -273,6 +273,9 @@ func (c *config) parse_serve() (*config_serve, error) {
 				ret.max_bins, err = strconv.Atoi(pair.Value)
 			case "downsampling_scale":
 				ret.downsampling_scale, err = strconv.Atoi(pair.Value)
+				if err == nil && ret.downsampling_scale < 1 {
+					err = errors.New("must be greater than zero")
+				}
 			case "graph_format":
 				ret.graph_format = pair.Value
 			case "graph_mimetype":
