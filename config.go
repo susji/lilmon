@@ -159,6 +159,9 @@ func (c *config) parse_common() (string, time.Duration, error) {
 				path_db = pair.Value
 			case "measure_period":
 				measure_period, err = time.ParseDuration(pair.Value)
+				if err == nil && measure_period.Seconds() < 1 {
+					err = errors.New("must be at last 1 second")
+				}
 			default:
 				err = fmt.Errorf("%d: unrecognized config item: %s",
 					pair.Lineno, k)
