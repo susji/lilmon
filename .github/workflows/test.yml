@@ -23,4 +23,6 @@ jobs:
       run: sudo apt install -y sqlite3
 
     - name: Run measurement system test
-      run: sh test_measure.sh
+      env:
+        CONFIG: misc/test_measure.ini
+      run: sh misc/test_measure.sh

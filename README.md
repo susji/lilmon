@@ -55,7 +55,7 @@ The graphs are drawn using `gonum.org/v1/plot`. Currently lilmon produces graphs
 like this:
 
 ![screenshot of lilmon
-UI](https://github.com/susji/lilmon/raw/main/lilmon.png "lilmon v0.x.y")
+UI](https://github.com/susji/lilmon/raw/main/misc/lilmon.png "lilmon v0.x.y")
 
 ## How do you configure lilmon?
 

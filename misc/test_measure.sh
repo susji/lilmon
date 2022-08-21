@@ -5,7 +5,7 @@
 # if dies abruptly.
 #
 
-CONFIG=test_measure.ini
+CONFIG=${CONFIG:-test_measure.ini}
 DB="$(grep -F path_db= $CONFIG | cut -d '=' -f2)"
 MEASURESECS="$(grep -F measure_period= $CONFIG | cut -d '=' -f2 | tr -d 's')"
 WAITSECS=$((2 * $MEASURESECS + 1))
