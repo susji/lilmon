@@ -1,5 +1,15 @@
 # Changelog
 
+## next version (YYYY-MM-DD)
+
+### Changes
+
+* Update `go-sqlite3` from v1.14.12 to v1.14.15
+
+### Additions
+
+* Added `no_ds` option also as an URL query parameter
+
 ## 0.14.1 (2022-08-21)
 
 ### Fixes
