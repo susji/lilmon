@@ -234,7 +234,7 @@ func TestDatabaseSmoke(t *testing.T) {
 	assert(t, err == nil, "cannot insert:", err)
 
 	dps, err := db_datapoints_get(
-		db, test_metrics[0], 1, 300, time.Duration(1)*time.Second, time_start, time.Now())
+		db, test_metrics[0], true, 1, 300, time.Duration(1)*time.Second, time_start, time.Now())
 	assert(t, err == nil, "cannot get datapoints:", err)
 
 	assert(t, len(dps) == 1, "unexpected amount of datapoints:", len(dps))
