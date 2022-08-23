@@ -37,6 +37,7 @@ func serve_index_gen(db *sql.DB, metrics []*metric, label string,
 		v := req.URL.Query()
 		raw_time_starts, ok_start := v["time_start"]
 		raw_time_ends, ok_end := v["time_end"]
+		_, no_ds := v["no_ds"]
 
 		var time_start, time_end time.Time
 		var err_start, err_end error
@@ -86,16 +87,18 @@ func serve_index_gen(db *sql.DB, metrics []*metric, label string,
 			RefreshPeriod        time.Duration
 			TimeFormat           string
 			RenderTime           time.Time
+			NoDownsampling       bool
 		}{
-			Title:         "lilmon",
-			RefreshPeriod: sconfig.autorefresh_period,
-			Metrics:       md,
-			EpochStart:    time_start.Unix(),
-			EpochEnd:      time_end.Unix(),
-			TimeStart:     time_start,
-			TimeEnd:       time_end,
-			TimeFormat:    determine_timestamp_format(time_start, time_end),
-			RenderTime:    time.Now(),
+			Title:          "lilmon",
+			RefreshPeriod:  sconfig.autorefresh_period,
+			Metrics:        md,
+			EpochStart:     time_start.Unix(),
+			EpochEnd:       time_end.Unix(),
+			TimeStart:      time_start,
+			TimeEnd:        time_end,
+			TimeFormat:     determine_timestamp_format(time_start, time_end),
+			RenderTime:     time.Now(),
+			NoDownsampling: no_ds,
 		}
 		template.Execute(w, template_data)
 	}
@@ -106,6 +109,7 @@ func serve_graph_gen(db *sql.DB, metrics []*metric, label string, sconfig *confi
 		v := req.URL.Query()
 		epoch_starts_raw, ok_start := v["epoch_start"]
 		epoch_ends_raw, ok_end := v["epoch_end"]
+		_, no_ds := v["no_ds"]
 
 		if !ok_start || !ok_end {
 			log.Println(
@@ -156,7 +160,8 @@ func serve_graph_gen(db *sql.DB, metrics []*metric, label string, sconfig *confi
 			metric_names[0], time_start, time_end)
 
 		b := bytes.Buffer{}
-		if err := graph_generate(db, metric, time_start, time_end, &b, sconfig); err != nil {
+		err := graph_generate(db, metric, no_ds, time_start, time_end, &b, sconfig)
+		if err != nil {
 			log.Println(label, ": graph generation failed: ", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintln(w, "graph generation failed")

@@ -34,8 +34,8 @@ func get_oversampling_ratio(bins int, measure_period time.Duration, time_start, 
 	return osr
 }
 
-func db_datapoints_get(db *sql.DB, metric *metric, scale, bins int, measure_period time.Duration, time_start, time_end time.Time) (
-	[]datapoint, error) {
+func db_datapoints_get(db *sql.DB, metric *metric, force_no_ds bool, scale, bins int,
+	measure_period time.Duration, time_start, time_end time.Time) ([]datapoint, error) {
 
 	template_select_values := `
 SELECT timestamp, value FROM %s
@@ -48,7 +48,8 @@ SELECT timestamp, value FROM %s
 
 	// ds means downsampling
 	ds := ""
-	if !metric.options.no_downsample {
+	log.Println("force_no_ds=", force_no_ds, ", metric.no_ds=", metric.options.no_downsample)
+	if !force_no_ds && !metric.options.no_downsample {
 		// `scale` will
 		scaled_osr := get_oversampling_ratio(bins, measure_period, time_start, time_end) / scale
 		log.Println("scaled_osr=", scaled_osr)

@@ -29,8 +29,7 @@
     <div style="float: left;">
       <pre>
         <b>{{ $n }}</b>, <u>{{ $m.Name }}</u>, <em>{{ $m.Description }}</em>
-        <img src="/graph?metric={{ .Name }}&epoch_start={{ $.EpochStart }}&epoch_end={{ $.EpochEnd }}">
-      </pre>
+        <img src="/graph?metric={{ .Name }}&epoch_start={{ $.EpochStart }}&epoch_end={{ $.EpochEnd }}{{ if $.NoDownsampling }}&no_ds{{ end }}">
     </div>
     {{ end }}
     <div style="clear: both;">

@@ -221,7 +221,8 @@ func (NeatFloatTicker) Ticks(min, max float64) []plot.Tick {
 	return got
 }
 
-func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, w io.Writer, sconfig *config_serve) error {
+func graph_generate(db *sql.DB, metric *metric, force_no_ds bool,
+	time_start, time_end time.Time, w io.Writer, sconfig *config_serve) error {
 	// To have sensible graphs, the bin width (delta-t) should be
 	//   - equal or greater than our measurement period and
 	//   - smaller than the amount of horizontal pixels divided by some
@@ -237,7 +238,7 @@ func graph_generate(db *sql.DB, metric *metric, time_start, time_end time.Time, 
 	t0 := time.Now()
 
 	dps, err := db_datapoints_get(
-		db, metric, sconfig.downsampling_scale, bins,
+		db, metric, force_no_ds, sconfig.downsampling_scale, bins,
 		sconfig.measure_period, time_start, time_end)
 	if err != nil {
 		log.Println("graph_generate: error from DB get: ", err)
