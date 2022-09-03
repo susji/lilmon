@@ -5,6 +5,7 @@
 ### Changes
 
 * Update `go-sqlite3` from v1.14.12 to v1.14.15
+* Layout in the example layout is now easier to the eyes and more responsive
 
 ### Additions
 
