@@ -1,41 +1,87 @@
+<!DOCTYPE html>
 <html>
   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      body {
+          font-family: monospace;
+      }
+      #ranges {
+          display: flex;
+          flex-flow: row wrap;
+          align-content: flex-start;
+          justify-content: center;
+          row-gap: 0.5em;
+          column-gap: 0.5em;
+      }
+      #ranges a {
+          background-color: lightgrey;
+          color: black;
+          font-weight: bold;
+          padding: 0.5em;
+      }
+      #current-range {
+          display: flex;
+          justify-content: center;
+          padding: 1.0em;
+      }
+      #metrics {
+          display: flex;
+          flex-flow: row wrap;
+          align-content: flex-start;
+          justify-content: center;
+      }
+      #metrics .metric {
+      }
+      #metrics .metric img {
+          max-width: 100%;
+      }
+      footer {
+          display: flex;
+          flex-flow: column wrap;
+          align-content: center;
+          justify-content: center;
+      }
+    </style>
     <meta http-equiv="refresh" content="{{ .RefreshPeriod.Seconds }}">
     <title>{{ .Title }}</title>
   </head>
   <body>
-    <div>
-      <code>
-        <a href="/?time_start=5m">5 minutes</a>
-        <a href="/?time_start=30m">30 minutes</a>
-        <a href="/?time_start=1h">hour</a>
-        <a href="/?time_start=3h">3 hours</a>
-        <a href="/?time_start=6h">6 hours</a>
-        <a href="/?time_start=12h">12 hours</a>
-        <a href="/?time_start=24h">day</a>
-        <a href="/?time_start=48h&time_end=24h">day before</a>
-        <a href="/?time_start=72h">3 days</a>
-        <a href="/?time_start=168h">week</a>
-        <a href="/?time_start=336h&time_end=168h">week before</a>
-        <a href="/?time_start=336h">2 weeks</a>
-        <a href="/?time_start=720h">month</a>
-        <a href="/?time_start=2160h">3 months</a>
-      </code>
+    <div id="ranges">
+      <a href="/?time_start=5m">5 minutes</a>
+      <a href="/?time_start=30m">30 minutes</a>
+      <a href="/?time_start=1h">hour</a>
+      <a href="/?time_start=3h">3 hours</a>
+      <a href="/?time_start=6h">6 hours</a>
+      <a href="/?time_start=12h">12 hours</a>
+      <a href="/?time_start=24h">day</a>
+      <a href="/?time_start=48h&time_end=24h">day before</a>
+      <a href="/?time_start=72h">3 days</a>
+      <a href="/?time_start=168h">week</a>
+      <a href="/?time_start=336h&time_end=168h">week before</a>
+      <a href="/?time_start=336h">2 weeks</a>
+      <a href="/?time_start=720h">month</a>
+      <a href="/?time_start=2160h">3 months</a>
     </div>
-    <div>
+    <div id="current-range">
       [{{ .TimeStart.Format .TimeFormat }}, {{ .TimeEnd.Format .TimeFormat  }} ]
     </div>
-    {{ range $n, $m := .Metrics }}
-    <div style="float: left;">
-      <pre>
-        <b>{{ $n }}</b>, <u>{{ $m.Name }}</u>, <em>{{ $m.Description }}</em>
-        <img src="/graph?metric={{ .Name }}&epoch_start={{ $.EpochStart }}&epoch_end={{ $.EpochEnd }}{{ if $.NoDownsampling }}&no_ds{{ end }}">
+    <div id="metrics">
+      {{ range $n, $m := .Metrics }}
+      <div class="metric">
+        <figure>
+          <figcaption>
+            <b>{{ $n }}</b>, <u>{{ $m.Name }}</u>, <em>{{ $m.Description }}</em>
+          </figcaption>
+          <img src="/graph?metric={{ .Name }}&epoch_start={{ $.EpochStart }}&epoch_end={{ $.EpochEnd }}{{ if $.NoDownsampling }}&no_ds{{ end }}">
+        </figure>
+      </div>
+      {{ end }}
     </div>
-    {{ end }}
-    <div style="clear: both;">
-      <hr>
-      <pre>lilmon</pre>
-      <pre>{{ .RenderTime.Format .TimeFormat }} (autorefresh @ {{ .RefreshPeriod }})</pre>
-    </div>
+    <footer>
+      <div>
+        lilmon @ {{ .RenderTime.Format .TimeFormat }} (autorefresh @ {{ .RefreshPeriod }})
+      </div>
+    </footer>
   </body>
 </html>
