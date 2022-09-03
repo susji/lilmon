@@ -1,11 +1,11 @@
 # Changelog
 
-## next version (YYYY-MM-DD)
+## 0.15.0 (2022-09-03)
 
 ### Changes
 
 * Update `go-sqlite3` from v1.14.12 to v1.14.15
-* Layout in the example layout is now easier to the eyes and more responsive
+* Layout in the example template is now easier to the eyes and more responsive
 
 ### Additions
 
