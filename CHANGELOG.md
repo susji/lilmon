@@ -6,6 +6,10 @@
 
 * `Makefile` fully fixed to prefer `/etc/lilmon/`
 
+### Changes
+
+* Example template is again more responsive
+
 ## 0.15.0 (2022-09-03)
 
 ### Changes
