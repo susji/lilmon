@@ -41,8 +41,8 @@ install: lilmon lilmon.ini.example lilmon.template.example
 	$(MKDIR_P) $(DESTDIR)$(sysconfdir)/lilmon
 	$(MKDIR_P) $(DESTDIR)$(localstatedir)/lilmon/db
 	$(INSTALL) -m 0755 lilmon $(DESTDIR)$(bindir)
-	$(INSTALL_DATA) lilmon.ini.example $(DESTDIR)$(sysconfdir)/lilmon.ini
-	$(INSTALL_DATA) lilmon.template.example $(DESTDIR)$(sysconfdir)/lilmon.template
+	$(INSTALL_DATA) lilmon.ini.example $(DESTDIR)$(sysconfdir)/lilmon/lilmon.ini
+	$(INSTALL_DATA) lilmon.template.example $(DESTDIR)$(sysconfdir)/lilmon/lilmon.template
 	@echo 'You probably want to chown the directory'
 	@echo
 	@echo '  $(DESTDIR)$(localstatedir)/lilmon/db'
