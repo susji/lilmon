@@ -1,5 +1,11 @@
 # Changelog
 
+## next version (YYYY-MM-DD)
+
+### Fixes
+
+* `Makefile` fully fixed to prefer `/etc/lilmon/`
+
 ## 0.15.0 (2022-09-03)
 
 ### Changes
