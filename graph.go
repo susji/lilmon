@@ -267,9 +267,9 @@ func graph_generate(db *sql.DB, metric *metric, force_no_ds bool,
 	if err != nil {
 		return err
 	}
-	s.GlyphStyle.Color = COLOR_FILL
+	s.GlyphStyle.Color = COLOR_GLYPH
 	s.GlyphStyle.Radius = vg.Length(sconfig.glyph_size)
-	s.LineStyle.Color = COLOR_FILL
+	s.LineStyle.Color = COLOR_LINE
 	s.LineStyle.Width = vg.Length(sconfig.line_thickness)
 
 	p := plot.New()
