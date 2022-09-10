@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"image/color"
 	"io"
 	"log"
 	"os"
@@ -228,6 +229,22 @@ func (c *config) parse_measure() (*config_measure, error) {
 	return ret, nil
 }
 
+func parse_rgba(raw string) (color.RGBA, error) {
+	c := strings.SplitN(raw, ",", 4)
+	if len(c) < 4 {
+		return color.RGBA{}, fmt.Errorf("wanted 4 RGBA components, got %d", len(c))
+	}
+	cc := []uint8{}
+	for i := 0; i < 4; i++ {
+		ci, err := strconv.ParseUint(strings.TrimSpace(c[i]), 10, 8)
+		if err != nil {
+			return color.RGBA{}, fmt.Errorf("bad RGBA component: %v", err)
+		}
+		cc = append(cc, uint8(ci))
+	}
+	return color.RGBA{R: cc[0], G: cc[1], B: cc[2], A: cc[3]}, nil
+}
+
 func (c *config) parse_serve() (*config_serve, error) {
 	ret := &config_serve{
 		width:  DEFAULT_GRAPH_WIDTH,
@@ -249,6 +266,11 @@ func (c *config) parse_serve() (*config_serve, error) {
 
 		line_thickness: DEFAULT_LINE_THICKNESS,
 		glyph_size:     DEFAULT_GLYPH_SIZE,
+
+		color_bg:    DEFAULT_COLOR_BG,
+		color_glyph: DEFAULT_COLOR_GLYPH,
+		color_line:  DEFAULT_COLOR_LINE,
+		color_label: DEFAULT_COLOR_LABEL,
 	}
 
 	in_err := false
@@ -294,6 +316,14 @@ func (c *config) parse_serve() (*config_serve, error) {
 				ret.line_thickness, err = strconv.Atoi(pair.Value)
 			case "glyph_size":
 				ret.glyph_size, err = strconv.Atoi(pair.Value)
+			case "color_bg":
+				ret.color_bg, err = parse_rgba(pair.Value)
+			case "color_label":
+				ret.color_label, err = parse_rgba(pair.Value)
+			case "color_glyph":
+				ret.color_glyph, err = parse_rgba(pair.Value)
+			case "color_line":
+				ret.color_line, err = parse_rgba(pair.Value)
 			default:
 				err = fmt.Errorf(
 					"%d: unrecognized config item: %s",

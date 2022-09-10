@@ -267,17 +267,17 @@ func graph_generate(db *sql.DB, metric *metric, force_no_ds bool,
 	if err != nil {
 		return err
 	}
-	s.GlyphStyle.Color = COLOR_GLYPH
+	s.GlyphStyle.Color = sconfig.color_glyph
 	s.GlyphStyle.Radius = vg.Length(sconfig.glyph_size)
-	s.LineStyle.Color = COLOR_LINE
+	s.LineStyle.Color = sconfig.color_line
 	s.LineStyle.Width = vg.Length(sconfig.line_thickness)
 
 	p := plot.New()
 	p.Add(s)
 	p.Add(plotter.NewGrid())
-	p.BackgroundColor = COLOR_BG
-	p.X.LineStyle.Color = COLOR_LABEL
-	p.Y.LineStyle.Color = COLOR_LABEL
+	p.BackgroundColor = sconfig.color_bg
+	p.X.LineStyle.Color = sconfig.color_label
+	p.Y.LineStyle.Color = sconfig.color_label
 	p.Title.Text = ""
 	p.X.Label.Text = ""
 	p.Y.Label.Text = ""

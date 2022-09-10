@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"image/color"
 	"math"
 	"path/filepath"
 	"reflect"
@@ -34,6 +35,10 @@ graph_format=png
 graph_mimetype=image/png
 line_thickness=11
 glyph_size=22
+color_line=1,2,3,4
+color_glyph=5,6,7,8
+color_label=9,10,11,12
+color_bg=13,14,15,16
 
 [metrics]
 metric=n_temp_files|Files in /tmp|y_min=0,kilo|find /tmp/ -type f|wc -l
@@ -487,4 +492,21 @@ func TestParseConfig(t *testing.T) {
 	assert(t,
 		sc.glyph_size == 22,
 		"unexpected glyph_size", sc.glyph_size)
+	assert(t,
+		sc.color_line == color.RGBA{1, 2, 3, 4}, "unexpected color_line", sc.color_line)
+	assert(t,
+		sc.color_glyph == color.RGBA{5, 6, 7, 8}, "unexpected color_glyph", sc.color_glyph)
+	assert(t,
+		sc.color_label == color.RGBA{9, 10, 11, 12}, "unexpected color_label", sc.color_label)
+	assert(t,
+		sc.color_bg == color.RGBA{13, 14, 15, 16}, "unexpected color_bg", sc.color_bg)
+}
+
+func TestParseRGBA(t *testing.T) {
+	got, err := parse_rgba("1,2,3,  4 ")
+	want := color.RGBA{R: 1, G: 2, B: 3, A: 4}
+	assert(t, err == nil, "unexpected rgba error", err)
+	assert(t,
+		reflect.DeepEqual(got, want),
+		"unexpected rgba", got, "wanted", want)
 }

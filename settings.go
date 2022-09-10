@@ -36,10 +36,10 @@ const (
 )
 
 var (
-	COLOR_BG                = color.RGBA{255, 255, 255, 255}
-	COLOR_LABEL             = color.RGBA{0, 0, 0, 255}
-	COLOR_GLYPH             = color.RGBA{0, 150, 0, 255}
-	COLOR_LINE              = color.RGBA{0, 100, 0, 100}
+	DEFAULT_COLOR_BG        = color.RGBA{255, 255, 255, 255}
+	DEFAULT_COLOR_LABEL     = color.RGBA{0, 0, 0, 255}
+	DEFAULT_COLOR_GLYPH     = color.RGBA{0, 150, 0, 255}
+	DEFAULT_COLOR_LINE      = color.RGBA{0, 100, 0, 100}
 	TIMESTAMP_FORMAT_YEAR   = "2006-01-02\n15:04"
 	TIMESTAMP_FORMAT_MONTH  = "2006-01-02\n15:04"
 	TIMESTAMP_FORMAT_DAY    = "Jan _2\n15:04"

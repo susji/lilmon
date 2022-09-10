@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image/color"
 	"time"
 
 	"github.com/susji/tinyini"
@@ -17,6 +18,7 @@ type config_serve struct {
 	listen_addr                                                   string
 	path_template, path_db                                        string
 	line_thickness, glyph_size                                    int
+	color_bg, color_label, color_glyph, color_line                color.RGBA
 }
 
 type config_measure struct {

@@ -20,6 +20,10 @@ graph_format=svg       ; see `go doc gonum.org/v1/plot.Plot.WriterTo` for suppor
 graph_mimetype=image/svg+xml
 line_thickness=2
 glyph_size=2
+color_bg=255,255,255,255
+color_label=0,0,0,255
+color_glyph=0,150,0,255
+color_line=0,100,0,100
 
 [metrics]
 metric=n_temp_files|Files in /tmp|y_min=0,kilo|find /tmp/ -type f|wc -l
