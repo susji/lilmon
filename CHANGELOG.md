@@ -11,6 +11,10 @@
 * Example template is again more responsive
 * Draw scatter bars instead of plain glyphs
 
+### Additions
+
+* Graph colors are now configurable!
+
 ## 0.15.0 (2022-09-03)
 
 ### Changes
