@@ -30,13 +30,15 @@ const (
 	DEFAULT_DOWNSAMPLING_SCALE = 2
 	DEFAULT_GRAPH_FORMAT       = "svg"
 	DEFAULT_GRAPH_MIMETYPE     = "image/svg+xml"
+	DEFAULT_LINE_THICKNESS     = 2
+	DEFAULT_GLYPH_SIZE         = 2
 	CONFIG_DELIM               = "|"
 )
 
 var (
 	COLOR_BG                = color.RGBA{255, 255, 255, 255}
-	COLOR_FG                = color.RGBA{255, 0, 0, 255}
 	COLOR_LABEL             = color.RGBA{0, 0, 0, 255}
+	COLOR_FILL              = color.RGBA{0, 150, 0, 255}
 	TIMESTAMP_FORMAT_YEAR   = "2006-01-02\n15:04"
 	TIMESTAMP_FORMAT_MONTH  = "2006-01-02\n15:04"
 	TIMESTAMP_FORMAT_DAY    = "Jan _2\n15:04"

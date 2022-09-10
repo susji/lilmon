@@ -18,6 +18,8 @@ downsampling_scale=2   ; bigger means spare more samples when downscaling
 autorefresh_period=2m
 graph_format=svg       ; see `go doc gonum.org/v1/plot.Plot.WriterTo` for supported formats
 graph_mimetype=image/svg+xml
+line_thickness=2
+glyph_size=2
 
 [metrics]
 metric=n_temp_files|Files in /tmp|y_min=0,kilo|find /tmp/ -type f|wc -l

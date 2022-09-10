@@ -32,6 +32,8 @@ max_bins=1500
 autorefresh_period=600s
 graph_format=png
 graph_mimetype=image/png
+line_thickness=11
+glyph_size=22
 
 [metrics]
 metric=n_temp_files|Files in /tmp|y_min=0,kilo|find /tmp/ -type f|wc -l
@@ -278,7 +280,7 @@ func TestParseMetricLine(t *testing.T) {
 	}
 
 	goodentries := []goodentry{
-		goodentry{
+		{
 			line:         "something|description here||echo this is command|wc -c",
 			want_name:    "something",
 			want_desc:    "description here",
@@ -479,4 +481,10 @@ func TestParseConfig(t *testing.T) {
 	assert(t,
 		time.Duration(sc.downsampling_scale) == 3,
 		"unexpected downsampling_scale", sc.downsampling_scale)
+	assert(t,
+		sc.line_thickness == 11,
+		"unexpected line_thickness", sc.line_thickness)
+	assert(t,
+		sc.glyph_size == 22,
+		"unexpected glyph_size", sc.glyph_size)
 }

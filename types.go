@@ -16,6 +16,7 @@ type config_serve struct {
 	graph_format, graph_mimetype                                  string
 	listen_addr                                                   string
 	path_template, path_db                                        string
+	line_thickness, glyph_size                                    int
 }
 
 type config_measure struct {

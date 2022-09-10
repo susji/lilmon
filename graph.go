@@ -263,11 +263,14 @@ func graph_generate(db *sql.DB, metric *metric, force_no_ds bool,
 		xys = append(xys, plotter.XY{X: float64(labels[i].Unix()), Y: binned[i]})
 	}
 
-	s, err := plotter.NewScatter(xys)
+	s, err := NewScatterBars(xys)
 	if err != nil {
 		return err
 	}
-	s.GlyphStyle.Color = COLOR_FG
+	s.GlyphStyle.Color = COLOR_FILL
+	s.GlyphStyle.Radius = vg.Length(sconfig.glyph_size)
+	s.LineStyle.Color = COLOR_FILL
+	s.LineStyle.Width = vg.Length(sconfig.line_thickness)
 
 	p := plot.New()
 	p.Add(s)

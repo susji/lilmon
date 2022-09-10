@@ -246,6 +246,9 @@ func (c *config) parse_serve() (*config_serve, error) {
 		path_template: DEFAULT_TEMPLATE_PATH,
 
 		listen_addr: DEFAULT_ADDR,
+
+		line_thickness: DEFAULT_LINE_THICKNESS,
+		glyph_size:     DEFAULT_GLYPH_SIZE,
 	}
 
 	in_err := false
@@ -287,6 +290,10 @@ func (c *config) parse_serve() (*config_serve, error) {
 				ret.listen_addr = pair.Value
 			case "path_template":
 				ret.path_template = pair.Value
+			case "line_thickness":
+				ret.line_thickness, err = strconv.Atoi(pair.Value)
+			case "glyph_size":
+				ret.glyph_size, err = strconv.Atoi(pair.Value)
 			default:
 				err = fmt.Errorf(
 					"%d: unrecognized config item: %s",

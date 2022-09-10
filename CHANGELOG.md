@@ -9,6 +9,7 @@
 ### Changes
 
 * Example template is again more responsive
+* Draw scatter bars instead of plain glyphs
 
 ## 0.15.0 (2022-09-03)
 
