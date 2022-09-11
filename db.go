@@ -24,14 +24,14 @@ func db_table_name_get(metric *metric) string {
 	return fmt.Sprintf("lilmon_metric_%s", metric.name)
 }
 
-func get_oversampling_ratio(bins int, measure_period time.Duration, time_start, time_end time.Time) int {
+func n_measurements_in_bin(bins int, measure_period time.Duration, time_start, time_end time.Time) int {
 	// Note: We assume here silently that most of the data has been gathered
 	// using roughly the same measurement period.
 	dt := time_end.Sub(time_start).Seconds()
 	binwidth := dt / float64(bins)
-	osr := int(binwidth / measure_period.Seconds())
-	log.Println("dt=", dt, "bins=", bins, "binwidth=", binwidth, "osr=", osr)
-	return osr
+	n := int(binwidth / measure_period.Seconds())
+	log.Println("dt=", dt, "bins=", bins, "binwidth=", binwidth, "n=", n)
+	return n
 }
 
 func db_datapoints_get(db *sql.DB, metric *metric, force_no_ds bool, scale, bins int,
@@ -48,16 +48,19 @@ SELECT timestamp, value FROM %s
 
 	// ds means downsampling
 	ds := ""
-	log.Println("force_no_ds=", force_no_ds, ", metric.no_ds=", metric.options.no_downsample)
+	log.Println(
+		"force_no_ds=", force_no_ds,
+		", metric.no_ds=", metric.options.no_downsample,
+		", scale=", scale)
 	if !force_no_ds && !metric.options.no_downsample {
-		// `scale` will
-		scaled_osr := get_oversampling_ratio(bins, measure_period, time_start, time_end) / scale
-		log.Println("scaled_osr=", scaled_osr)
-		if scaled_osr >= 2 {
-			// We take the scaled multiplicative inverse of OSR and use it
-			// to drop random samples.
+		n := n_measurements_in_bin(bins, measure_period, time_start, time_end) / scale
+		log.Println("scaled n=", n)
+		if n >= 2 {
+			// If we expect to find enough measurements for a single
+			// bin, we will begin to drop random samples to make the
+			// DB query faster. This is sort of like downsampling.
 			drop_abs := 10000
-			drop_rel := drop_abs / scaled_osr
+			drop_rel := drop_abs / n
 			if drop_rel < 1 {
 				drop_rel = 1
 			}
@@ -74,7 +77,7 @@ SELECT timestamp, value FROM %s
 		time_start.Unix(),
 		time_end.Unix(),
 		ds)
-
+	log.Println("ds=", ds)
 	rows, err := db.Query(q)
 	if err != nil {
 		log.Println("graph_generate: unable to select rows: ", err)
@@ -92,6 +95,7 @@ SELECT timestamp, value FROM %s
 		}
 		dps = append(dps, datapoint{ts: ts, value: value})
 	}
+	log.Println("=> sampled", len(dps), " values")
 	return dps, nil
 }
 
