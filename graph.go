@@ -82,9 +82,24 @@ func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time,
 	for cur_bin := int64(0); cur_bin < bins; cur_bin++ {
 		bin_value_sum_cur := float64(0)
 		n_datapoints_cur := 0
-		// First sum together datapoints belonging to this bin...
+		// First sum together datapoints belonging to this bin.
+		//
+		// When we look at a datapoint, there are three options:
+		//   1. It's before our current bin's time range
+		//   2. It's in our current bin's time range
+		//   3. It's after our current bin's time range
+		//
+		// In the above cases we act like this:
+		//   1. Jump over to next datapoint
+		//   2. Count the datapoint's value
+		//   3. End counting values because the bin is done
+		//
 		for cur_dp_i < len(dps) {
 			dp_sec := dps[cur_dp_i].ts.Unix()
+			if dp_sec < ts_bin_left_sec {
+				cur_dp_i++
+				continue
+			}
 			if dp_sec >= ts_bin_left_sec && dp_sec <= ts_bin_right_sec {
 				bin_value_sum_cur += dps[cur_dp_i].value
 				n_datapoints_cur++
