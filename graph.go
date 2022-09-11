@@ -78,7 +78,7 @@ func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time,
 	ts_bin_right_sec := time_start_epoch + delta_t_bin_sec
 	val_min := math.NaN()
 	val_max := math.NaN()
-	// NaN through each bin once and see how many timestamps we can fit in.
+	// Loop through each bin and distribute datapoints inside them.
 	for cur_bin := int64(0); cur_bin < bins; cur_bin++ {
 		bin_value_sum_cur := float64(0)
 		n_datapoints_cur := 0
