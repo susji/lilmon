@@ -5,11 +5,14 @@
 ### Fixes
 
 * `Makefile` fully fixed to prefer `/etc/lilmon/`
+* More robust logic around graph binning
 
 ### Changes
 
 * Example template is again more responsive
 * Draw scatter bars instead of plain glyphs
+* Double the default value of `downsampling_scale` to 4
+* More aggressive logging around downsampling
 
 ### Additions
 
