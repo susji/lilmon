@@ -1,6 +1,6 @@
 # Changelog
 
-## next version (YYYY-MM-DD)
+## 0.16.0 (2022-09-11)
 
 ### Fixes
 
