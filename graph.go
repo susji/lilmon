@@ -110,7 +110,11 @@ func bin_datapoints(dps []datapoint, bins int64, time_start, time_end time.Time,
 		}
 		// ... and then do the requested operation - usually average of
 		// the current bin values.
-		binned[cur_bin] = bin_value_sum_cur / float64(n_datapoints_cur)
+		if n_datapoints_cur > 0 {
+			binned[cur_bin] = bin_value_sum_cur / float64(n_datapoints_cur)
+		} else {
+			binned[cur_bin] = math.NaN()
+		}
 
 		// Timestamp label is the average of bin left and right.
 		labels[cur_bin] = time.Unix((ts_bin_left_sec+ts_bin_right_sec)/2, 0)
