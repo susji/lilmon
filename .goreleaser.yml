@@ -2,17 +2,10 @@ builds:
 - id: lilmon
   binary: lilmon
   env:
-    - CGO_ENABLED=0
+    - CGO_ENABLED=1
   targets:
     - "linux_amd64"
-    - "linux_arm64"
-    - "linux_arm"
     - "openbsd_amd64"
-    - "openbsd_arm64"
-    - "openbsd_arm"
-    - "freebsd_amd64"
-    - "freebsd_arm64"
-    - "freebsd_arm"
   mod_timestamp: "{{ .CommitTimestamp }}"
   flags:
     - -trimpath
