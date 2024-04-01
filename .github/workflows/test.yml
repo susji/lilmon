@@ -1,27 +1,26 @@
 name: Run small and big tests
 
-on: push
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-
     - name: Set up Go
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v4
       with:
-        go-version: 1.18
-
+        go-version: '1.22.1'
     - name: Build
       run: go build -v ./...
-
     - name: Test
       run: go test -v ./...
-
     - name: Install sqlite3
       run: sudo apt install -y sqlite3
-
     - name: Run measurement system test
       env:
         CONFIG: misc/test_measure.ini
