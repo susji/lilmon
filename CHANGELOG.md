@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.17.0 (2024-04-01)
+
+### Changes
+
+* Use GitHub release automation with GoReleaser
+  * Pin Go to v1.22.1
+  * Build for amd64, arm64, and arm on Linux, OpenBSD, and FreeBSD
+* Lots of hopefully meaningless dependency bumps
+
 ## 0.16.0 (2022-09-11)
 
 ### Fixes
