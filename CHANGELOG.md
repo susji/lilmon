@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.17.2 (2024-04-01)
+
+### Fixes
+
+* When building a release, lack all ambition
+
 ## 0.17.1 (2024-04-01)
 
 ### Fixes
