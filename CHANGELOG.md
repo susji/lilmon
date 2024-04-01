@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.17.1 (2024-04-01)
+
+### Fixes
+
+* When building a release, try less ambitious targets
+  * This is due to our dependency CGO & SQLite
+
 ## 0.17.0 (2024-04-01)
 
 ### Changes
