@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/susji/tinyini v0.7.0
-	golang.org/x/sys v0.11.0
+	golang.org/x/sys v0.21.0
 	gonum.org/v1/plot v0.13.0
 )
 
